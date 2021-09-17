@@ -3,21 +3,41 @@ import typing
 import ctypes as C
 import sys
 from dataclasses import dataclass
+from utils import AnyCType
 
 """
-TODO?
-- annotation metadata for bitfield widths
-- endian-specific AStruct classes
-- detect and skip non-ctypes type annotations in classdicts
+TODO:
+- endian-specific AStruct classes?
+- less verbose annotations!
+- get rid of the FieldsBuilder class? bake it into AStructMeta?
 """
 
 
 @dataclass(frozen=True)
-class CStr:
+class CField:
+    """Annotation metadata for a field of an AStruct class.
+
+    Use by annotating a class attribute in an AStruct like this:
+        level: Annotated[int, CField(c_uint32)]
+
+    Attributes:
+    ctype: The underlying ctypes data type for the field. Must be one of the
+        simple types in the ctypes module, a Structure, Union, Array, or
+        subclass thereof.
+    bitwidth: For integral ctypes, the width of the field in bits. See details
+        in the documentation for the third element of the _fields_ tuples of a
+        ctypes.Structure.
+    """
+    ctype: type[AnyCType]
+    bitwidth: Optional[int] = None
+
+
+@dataclass(frozen=True)
+class CStrField:
     """Annotation metadata for a C-string member of an AStruct class.
 
     Use by annotating a class attribute in an AStruct like this:
-        name: Annotated[str, CStr(32, encoding='utf-8')]
+        name: Annotated[str, CStrField(32, encoding='utf-8')]
 
     Attributes:
     max_length: The total number of bytes in the string, including the null
@@ -37,7 +57,7 @@ class CStr:
 
     def bytes_to_str(self, bs: bytes) -> str:
         """Convert the given bytes to a string, according to the attributes of
-        this CStr instance.
+        this CStrField instance.
 
         If null_terminated is True, all bytes after the first zero byte are
         ignored.
@@ -49,7 +69,7 @@ class CStr:
 
     def str_to_bytes(self, s: str) -> bytes:
         """Convert the given string to bytes, according to the attributes of
-        this CStr instance.
+        this CStrField instance.
 
         A zero byte is appended to the result if null_terminated is True.
         Raises an IndexError if encoding the string results in a series of
@@ -65,7 +85,8 @@ class CStr:
         return bs
 
 
-Fields = Sequence[Union[tuple[str, type], tuple[str, type, int]]]
+CStructureField = Union[tuple[str, type[AnyCType]], tuple[str, type[AnyCType], int]]
+CStructureFields = Sequence[CStructureField]
 T = TypeVar('T')
 
 
@@ -89,41 +110,11 @@ class FieldsBuilder:
         return note
 
     @classmethod
-    def annotation_isinstance(cls, note: Any, note_cls: Union[tuple[type], type]) -> bool:
-        """Checks if a type annotation is an instance of note_cls, or
-        any of the classes in note_cls if it is a tuple.
-        """
+    def annotation_isinstance(cls, note: Any, note_cls: type) -> bool:
+        """Checks if a type annotation is an instance of note_cls."""
         # Normal isinstance doesn't work on type annotation classes because of
         # all the crazy trickery used for type checking.
-        origin = typing.get_origin(note)
-
-        if isinstance(note_cls, type):
-            return origin is note_cls
-
-        for t in note_cls:
-            if origin is t:
-                return True
-
-        return False
-
-    @classmethod
-    def get_annotation_underlying_type(cls, note: Any) -> type:
-        """Returns the underlying type of a type annotation.
-
-        Extracts the first argument for Annotated and ClassVar annotations
-        (e.g. int for ClassVar[int]). All other annotations are considered
-        as-is.
-
-        Raises a TypeError if the the result is not a type.
-        """
-        if cls.annotation_isinstance(note, (Annotated, ClassVar)):  # type: ignore[arg-type]
-            # the first argument is the real type
-            note = typing.get_args(note)[0]
-
-        if not isinstance(note, type):
-            raise TypeError('Expected annotation to be a type')
-
-        return note
+        return typing.get_origin(note) is note_cls
 
     @classmethod
     def get_first_annotated_md_of_type(cls, note: Any, md_cls: type[T]) -> Optional[T]:
@@ -145,30 +136,9 @@ class FieldsBuilder:
         return None
 
     @classmethod
-    def is_annotation_for_field(cls, attr_name: str, note: Any) -> bool:
-        """Returns True if the given (reified) annotation and attribute name
-        are valid candidates for a Structure's _fields_ attribute.
-
-        Ignores attributes with several reserved names, and those annotated
-        with ClassVar.
-        """
-        NAME_BLACKLIST = {'_anonymous_', '_pack_'}
-
-        if attr_name in NAME_BLACKLIST:
-            return False
-
-        if cls.annotation_isinstance(note, ClassVar):  # type: ignore[arg-type]
-            return False
-
-        # TODO: Ideally we would check if the underlying type is a subclass of
-        # _ctypes._CData, the base type of all ctypes, but it's not easily
-        # accessible.
-        return True
-
-    @classmethod
     def get_fields(cls,
                    annotations: dict[str, Any],
-                   __globals: dict[str, Any]) -> tuple[Fields, dict[str, CStr]]:
+                   __globals: dict[str, Any]) -> tuple[CStructureFields, dict[str, CStrField]]:
         """Builds a _fields_ value given a dict of type annotations.
 
         Arguments:
@@ -178,27 +148,39 @@ class FieldsBuilder:
         __globals: The dict of globals to use when evaluating the type
             annotations in the first argument.
 
-        Returns a tuple of the _fields_ value and a dict of any CStr
+        Returns a tuple of the _fields_ value and a dict of any CStrField
         attributes, so they may be processed specially. The names of the
         fields returned may not match the names of the attrs in the
-        annotations dict. For example, CStr attributes are given a prefix to
-        hide raw access to their underlying bytes.
+        annotations dict. For example, CStrField attributes are given a prefix
+        to hide raw access to their underlying bytes.
+
+        Only considers non-ClassVar fields annotated with either CField or
+        CStrField. The special ctypes attributes _anonymous_ and _pack_ are
+        explicitly skipped.
         """
-        fields = []
+        NAME_BLACKLIST = {'_anonymous_', '_pack_'}
+
+        fields: list[CStructureField] = []
         cstr_fields = {}
 
         for attr_name, note in annotations.items():
-            note = cls.reify_annotation(note, __globals)
-            if not cls.is_annotation_for_field(attr_name, note):
+            if attr_name in NAME_BLACKLIST:
                 continue
 
-            if cstr := cls.get_first_annotated_md_of_type(note, CStr):
+            note = cls.reify_annotation(note, __globals)
+
+            if cls.annotation_isinstance(note, ClassVar):  # type: ignore[arg-type]
+                continue
+
+            if cstr := cls.get_first_annotated_md_of_type(note, CStrField):
                 field_name = cls.CSTR_RAW_BYTES_PREFIX + attr_name
                 fields.append((field_name, C.c_char * cstr.max_length))
                 cstr_fields[attr_name] = cstr
-            else:
-                ctype = cls.get_annotation_underlying_type(note)
-                fields.append((attr_name, ctype))
+            elif cfld := cls.get_first_annotated_md_of_type(note, CField):
+                if cfld.bitwidth is not None:
+                    fields.append((attr_name, cfld.ctype, cfld.bitwidth))
+                else:
+                    fields.append((attr_name, cfld.ctype))
 
         return (fields, cstr_fields)
 
@@ -210,12 +192,12 @@ class AStructMeta(type(C.Structure)):  # type: ignore[misc]
     Handles massaging class-level type annotations into the _fields_ class
     attr, before handing the work off to ctypes.Structure's metaclass.
 
-    Also adds transparent str properties for attrs annotated with the CStr
+    Also adds transparent str properties for attrs annotated with the CStrField
     metadata.
     """
 
     @classmethod
-    def add_string_prop(cls, target_cls: type[T], name: str, cstr: CStr) -> None:
+    def add_string_prop(cls, target_cls: type[T], name: str, cstr: CStrField) -> None:
         """Adds a property to transparently read and write a ctypes.c_char
         array as a str.
 
@@ -223,7 +205,7 @@ class AStructMeta(type(C.Structure)):  # type: ignore[misc]
         target_cls: The class to which we are adding a property.
         name: The name of the property. The underlying ctypes array is assumed
             to be a prefixed version of this string.
-        cstr: The CStr instance defining the behavior of the string.
+        cstr: The CStrField instance defining the behavior of the string.
         """
         raw_attr = FieldsBuilder.CSTR_RAW_BYTES_PREFIX + name
 
@@ -248,7 +230,7 @@ class AStructMeta(type(C.Structure)):  # type: ignore[misc]
 
         struct_cls = super().__new__(cls, name, bases, classdict)
 
-        # Expose CStr fields as str properties
+        # Expose CStrField fields as str properties
         for prop_name, cstr in cstr_fields.items():
             cls.add_string_prop(struct_cls, prop_name, cstr)
 
@@ -260,23 +242,22 @@ class AStruct(C.Structure, metaclass=AStructMeta):
     annotations instead of _fields_.
 
     To use, create a subclass and add describe your fields with class-level
-    attributes, annotated with the appropriate ctypes.
+    attributes, annotated with either CField or CStrField. AStruct generates
+    transparent string properties for fixed-length c_char arrays via the
+    CStrField metadata.
 
-    AStruct also supports adding transparent string properties for
-    fixed-length c_char arrays via the CStr metadata and the Annotated
-    annotation. For example:
+    An example:
 
     class Player(AStruct):
-        level: c_uint16
-        hp: c_uint16
-        skill_aptitudes: c_uint8 * 8
-        name: Annotated[str, CStr(16)]
+        level: Annotated[int, CField(c_uint16)]
+        hp: Annotated[int, CField(c_uint16)]
+        skill_aptitudes: Annotated[Sequence[int], CField(c_uint8 * 8)]
+        name: Annotated[str, CStrField(16)]
 
     Further subclassing and the standard _pack_ attribute work as they do with
-    normal ctype.Structure subclasses. You can use nest an AStruct in the
-    _fields_ of another ctype.Structure or via a type annotation in another
-    AStruct. You are also free to add instance and class methods to your
-    AStruct subclasses.
+    normal ctype.Structure subclasses. You can nest an AStruct in the _fields_
+    of another ctype.Structure or via a type annotation in another AStruct. You
+    are also free to add instance and class methods to your AStruct subclasses.
     """
     pass
 

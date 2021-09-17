@@ -1,8 +1,8 @@
-from typing import Sequence, TypeVar, Iterator, Union, overload
+from typing import Annotated, Sequence, TypeVar, Iterator, Union, overload
 import ctypes as C
 import struct
-from astruct import PackedAStruct
-from mmap import mmap
+from astruct import PackedAStruct, CField
+from utils import WriteableBuffer
 
 """
 TODO?
@@ -10,19 +10,15 @@ TODO?
 - The E TypeVar is too narrow. It would be fine for the elements of a counted
 table to be simple ctypes like c_uint16, but the common base type (_CData) is
 not easily accessible.
-- Avoid the struct.unpack_from call, maybe? A header struct that we subclass?
-Probably not worth it.
+- Avoid the struct.unpack_from call, maybe? A header struct that we subclass,
+in the vein of PSPFS?
 - I'm pretty sure CountedTable.__contains__ doesn't really work, because ctypes
 Structures don't handle equality in a normal way. Probably not a big deal.
-- Better WriteableBuffer type? Feels like a MutableSequence[int] should be
-fine, but there's some weirdness between the types struct.unpack_from and
-ctypes.Structure.from_buffer want.
 - Is it a problem that CountedTable itself is not a Structure? The current
 approach prevents us from embedding it in other Structures, or in an array.
 """
 
 E = TypeVar('E', bound=C.Structure)
-WriteableBuffer = Union[bytearray, memoryview, mmap]
 
 
 def structFactory(element_cls: type[E], length: int) -> type[C.Structure]:
@@ -30,11 +26,9 @@ def structFactory(element_cls: type[E], length: int) -> type[C.Structure]:
     length-prefixed table of length instances of element_cls.
     """
     class RawCountedTable(PackedAStruct):
-        capacity: C.c_uint32
-        entry_count: C.c_uint32
-        entries: element_cls * length  # type: ignore[valid-type]
-        # mypy doesn't seem to grok that a C.Structure subclass multiplied by
-        # an int results in a type. Can't say that I blame it.
+        capacity: Annotated[int, CField(C.c_uint32)]
+        entry_count: Annotated[int, CField(C.c_uint32)]
+        entries: Annotated[Sequence[E], CField(element_cls * length)]
 
     return RawCountedTable
 
@@ -61,9 +55,6 @@ class CountedTable(Sequence[E]):
             raise ValueError(f'Capacity ({capacity}) is not equal to entry count ({entry_count})!')
 
         struct_cls = structFactory(element_cls, entry_count)
-
-        # The stub for Structure.from_buffer disagrees slightly with our
-        # WriteableBuffer. We'll just ignore type errors.
         self._raw = struct_cls.from_buffer(buffer, offset)  # type: ignore[arg-type]
 
     def __iter__(self) -> Iterator[E]:
