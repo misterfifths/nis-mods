@@ -15,6 +15,7 @@ TODO:
 CStructureField = Union[tuple[str, type[AnyCType]], tuple[str, type[AnyCType], int]]
 CStructureFields = Sequence[CStructureField]
 T = TypeVar('T')
+CT = TypeVar('CT', bound=AnyCType)
 
 
 @dataclass(frozen=True)
@@ -234,6 +235,16 @@ class AStructMeta(type(C.Structure)):  # type: ignore[misc]
             cls.add_string_prop(struct_cls, prop_name, cstr)
 
         return struct_cls
+
+    # pylance can't really pick up on the existence of these methods because we
+    # have a dynamic base class. These passthroughs help it understand.
+    # Ignored for typing because we can't express that this metaclass will only
+    # be used for ctypes.Structure subclasses.
+    def __mul__(cls: type[CT], other: int) -> type[C.Array[CT]]:  # type: ignore
+        return super().__mul__(other)  # type: ignore
+
+    def __rmul__(cls: type[CT], other: int) -> type[C.Array[CT]]:  # type: ignore
+        return super().__rmul__(other)  # type: ignore
 
 
 class AStruct(C.Structure, metaclass=AStructMeta):
