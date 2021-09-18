@@ -117,6 +117,36 @@ class FieldsBuilder:
         return typing.get_origin(note) is note_cls
 
     @classmethod
+    def get_annotation_underlying_type(cls, note: Any) -> type:
+        """Returns the underlying type of a type annotation.
+
+        Extracts the first argument for Annotated and ClassVar annotations
+        (e.g. int for ClassVar[int]). All other annotations are considered
+        as-is.
+
+        Raises a TypeError if the the result is not a type.
+        """
+        if cls.annotation_isinstance(note, Annotated) or \
+           cls.annotation_isinstance(note, ClassVar):  # type: ignore
+            # the first argument is the real type
+            note = typing.get_args(note)[0]
+
+        return note
+
+    @classmethod
+    def annotation_is_sequence(cls, note: Any) -> bool:
+        """Returns true if the given anntation is Sequence, a specialized
+        Sequence (e.g. Sequence[int]), or a ClassVar or Annotated Sequence."""
+        underlying_type = cls.get_annotation_underlying_type(note)
+        if underlying_type is Sequence:
+            return True
+
+        # A specialized Sequence is actually an instance of a _GenericAlias,
+        # and its origin will actually be collections.abc.Sequence (which is
+        # Sequence's origin).
+        return typing.get_origin(underlying_type) is typing.get_origin(Sequence)
+
+    @classmethod
     def get_first_annotated_md_of_type(cls, note: Any, md_cls: type[T]) -> Optional[T]:
         """If note is an Annotated type annotation, returns the first piece of
         metadata belonging to it that is an instance of md_cls.
@@ -173,10 +203,18 @@ class FieldsBuilder:
                 continue
 
             if cstr := cls.get_first_annotated_md_of_type(note, CStrField):
+                if not issubclass(cls.get_annotation_underlying_type(note), str):
+                    raise TypeError(f'CStrField "{attr_name}" should have the underlying type str')
+
                 field_name = cls.CSTR_RAW_BYTES_PREFIX + attr_name
                 fields.append((field_name, C.c_char * cstr.max_length))
                 cstr_fields[attr_name] = cstr
             elif cfld := cls.get_first_annotated_md_of_type(note, CField):
+                if issubclass(cfld.ctype, C.Array):
+                    if not cls.annotation_is_sequence(note):
+                        raise TypeError(f'Array CField "{attr_name}" should have an underlying '
+                                        'type that is a Sequence')
+
                 if cfld.bitwidth is not None:
                     fields.append((attr_name, cfld.ctype, cfld.bitwidth))
                 else:
