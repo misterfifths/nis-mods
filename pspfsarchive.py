@@ -1,8 +1,8 @@
 import ctypes as C
-from typing import Annotated, ClassVar, Optional
+from typing import Annotated, ClassVar
 from astruct import typed_struct, CField, CStrField
 from utils import WriteableBuffer, ro_cached_property
-import startdatarchive  # this is circular; not doing an "import from"
+from startdatarchive import StartDatArchive
 
 # TODO: enable switching between these
 PSP_FILENAME_LEN = 24
@@ -52,14 +52,14 @@ class PSPFSArchive:
         self.files = FileEntriesArray.from_buffer(self._buffer,  # type: ignore[arg-type]
                                                   file_entries_offset)
 
-    def find_file(self, name: str) -> Optional[PSPFSFileEntry]:
+    def find_file(self, name: str) -> PSPFSFileEntry:
         for file in self.files:
             if file.filename == name:
                 return file
 
-        return None
+        raise KeyError(f'File "{name}" not found in archive')
 
-    # forward reference because of circularity
     @ro_cached_property
-    def start_dat(self) -> 'startdatarchive.StartDatArchive':
-        return startdatarchive.StartDatArchive.from_pspfs(self)
+    def start_dat(self) -> StartDatArchive:
+        file_entry = self.find_file(StartDatArchive.STANDARD_FILENAME)
+        return StartDatArchive(self._buffer, file_entry.offset)

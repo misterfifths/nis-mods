@@ -1,10 +1,9 @@
 import ctypes as C
-from typing import Annotated, ClassVar, Optional, Sequence, TypeVar
+from typing import Annotated, ClassVar, Sequence, TypeVar
 from astruct import typed_struct, CStrField, CField
 from countedtable import CountedTable
 from utils import AnyCType, WriteableBuffer, ro_cached_property
-import pspfsarchive  # this is circular; not doing an "import from"
-import skills  # also circular
+from skills import SkillTab
 import os
 
 E = TypeVar('E', bound=AnyCType)
@@ -61,15 +60,6 @@ class StartDatArchive:
                                                           file_entries_offset)
         self._make_file_wrappers()
 
-    # forward reference because of circularity
-    @classmethod
-    def from_pspfs(cls, archive: 'pspfsarchive.PSPFSArchive') -> 'StartDatArchive':
-        start_dat_entry = archive.find_file(cls.STANDARD_FILENAME)
-        if start_dat_entry is None:
-            raise FileNotFoundError(f'{cls.STANDARD_FILENAME} not found in archive')
-
-        return cls(archive._buffer, offset=start_dat_entry.offset)
-
     def _make_file_wrappers(self) -> None:
         self.files = []
 
@@ -86,19 +76,16 @@ class StartDatArchive:
 
             self.files.append(wrapper)
 
-    def find_file(self, name: str) -> Optional[StartDatFileEntry]:
+    def find_file(self, name: str) -> StartDatFileEntry:
         for file in self.files:
             if file.filename == name:
                 return file
 
-        return None
+        raise KeyError(f'File "{name}" not found in archive')
 
-    def get_file_as_table(self, filename: str, element_cls: type[E]) -> Optional[CountedTable[E]]:
-        file = self.find_file(filename)
-        if not file:
-            return None
-
-        return CountedTable(element_cls, self._buffer, file.offset)
+    def get_file_as_table(self, filename: str, element_cls: type[E]) -> CountedTable[E]:
+        file_entry = self.find_file(filename)
+        return CountedTable(element_cls, self._buffer, file_entry.offset)
 
     def extract_to_directory(self, dirname: str) -> None:
         for f in self.files:
@@ -108,5 +95,6 @@ class StartDatArchive:
 
     # forward reference because of circularity
     @ro_cached_property
-    def skilltab(self) -> 'skills.SkillTab':
-        return skills.SkillTab.from_startdat(self)
+    def skilltab(self) -> SkillTab:
+        file_entry = self.find_file(SkillTab.STANDARD_FILENAME)
+        return SkillTab(self._buffer, file_entry.offset)

@@ -3,7 +3,6 @@ from typing import Annotated, ClassVar, Optional, Sequence
 from astruct import typed_struct, CStrField, CField
 from countedtable import CountedTable
 from utils import WriteableBuffer
-import startdatarchive  # this is circular; not doing an "import from"
 
 
 @typed_struct
@@ -32,15 +31,6 @@ class SkillTab(CountedTable[Skill]):
 
     def __init__(self, buffer: WriteableBuffer, offset: int = 0) -> None:
         super().__init__(Skill, buffer, offset)
-
-    # forward reference because of circularity
-    @classmethod
-    def from_startdat(cls, start_dat: 'startdatarchive.StartDatArchive') -> 'SkillTab':
-        file_entry = start_dat.find_file(cls.STANDARD_FILENAME)
-        if file_entry is None:
-            raise FileNotFoundError(f'{cls.STANDARD_FILENAME} not found in archive')
-
-        return cls(start_dat._buffer, offset=file_entry.offset)
 
     def skill_for_name(self, name: str) -> Optional[Skill]:
         for skill in self._entries:
