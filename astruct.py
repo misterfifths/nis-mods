@@ -12,6 +12,10 @@ TODO:
 - get rid of the FieldsBuilder class? bake it into AStructMeta?
 """
 
+CStructureField = Union[tuple[str, type[AnyCType]], tuple[str, type[AnyCType], int]]
+CStructureFields = Sequence[CStructureField]
+T = TypeVar('T')
+
 
 @dataclass(frozen=True)
 class CField:
@@ -85,11 +89,6 @@ class CStrField:
         return bs
 
 
-CStructureField = Union[tuple[str, type[AnyCType]], tuple[str, type[AnyCType], int]]
-CStructureFields = Sequence[CStructureField]
-T = TypeVar('T')
-
-
 class FieldsBuilder:
     CSTR_RAW_BYTES_PREFIX: ClassVar[str] = '_raw_'
 
@@ -161,7 +160,7 @@ class FieldsBuilder:
         NAME_BLACKLIST = {'_anonymous_', '_pack_'}
 
         fields: list[CStructureField] = []
-        cstr_fields = {}
+        cstr_fields: dict[str, CStrField] = {}
 
         for attr_name, note in annotations.items():
             if attr_name in NAME_BLACKLIST:
@@ -197,7 +196,7 @@ class AStructMeta(type(C.Structure)):  # type: ignore[misc]
     """
 
     @classmethod
-    def add_string_prop(cls, target_cls: type[T], name: str, cstr: CStrField) -> None:
+    def add_string_prop(cls, target_cls: type, name: str, cstr: CStrField) -> None:
         """Adds a property to transparently read and write a ctypes.c_char
         array as a str.
 
@@ -209,26 +208,26 @@ class AStructMeta(type(C.Structure)):  # type: ignore[misc]
         """
         raw_attr = FieldsBuilder.CSTR_RAW_BYTES_PREFIX + name
 
-        def getter(self: T) -> str:
+        def getter(self: Any) -> str:
             return cstr.bytes_to_str(getattr(self, raw_attr))
 
-        def setter(self: T, value: str) -> None:
+        def setter(self: Any, value: str) -> None:
             setattr(self, raw_attr, cstr.str_to_bytes(value))
 
         setattr(target_cls, name, property(getter, setter))
 
-    def __new__(cls, name: str, bases: tuple, classdict: dict) -> 'AStructMeta':
+    def __new__(cls, name: str, bases: Any, classdict: dict[str, Any]) -> 'AStructMeta':
         if '_fields_' in classdict:
             raise ValueError('The _fields_ class variable should not be specified for a AStruct')
 
         cls_globals = vars(sys.modules[cls.__module__])
-        notes = classdict.get('__annotations__', {})
+        notes: dict[str, Any] = classdict.get('__annotations__', {})
 
         fields, cstr_fields = FieldsBuilder.get_fields(notes, cls_globals)
         if len(fields):
             classdict['_fields_'] = fields
 
-        struct_cls = super().__new__(cls, name, bases, classdict)
+        struct_cls: 'AStructMeta' = super().__new__(cls, name, bases, classdict)  # type: ignore
 
         # Expose CStrField fields as str properties
         for prop_name, cstr in cstr_fields.items():
