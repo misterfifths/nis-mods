@@ -1,6 +1,6 @@
 import ctypes as C
 from typing import Annotated, ClassVar, Optional, Sequence, TypeVar
-from astruct import PackedAStruct, CStrField, CField
+from astruct import typed_struct, CStrField, CField
 from countedtable import CountedTable
 from utils import AnyCType, WriteableBuffer
 from pspfsarchive import PSPFSArchive
@@ -9,12 +9,18 @@ import os
 E = TypeVar('E', bound=AnyCType)
 
 
-class StartDatHeader(PackedAStruct):
+@typed_struct
+class StartDatHeader(C.Structure):
+    _pack_: ClassVar[int] = 1
+
     file_count: Annotated[int, CField(C.c_uint32)]  # TODO: this is probably 64 bits
     _zero: Annotated[Sequence[int], CField(C.c_uint32 * 3)]
 
 
-class RawStartDatFileEntry(PackedAStruct):
+@typed_struct
+class RawStartDatFileEntry(C.Structure):
+    _pack_: ClassVar[int] = 1
+
     raw_end_offset: Annotated[int, CField(C.c_uint32)]
     filename: Annotated[str, CStrField(28)]
 

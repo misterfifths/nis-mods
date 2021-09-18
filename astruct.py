@@ -1,21 +1,19 @@
-from typing import Annotated, ClassVar, Optional, Any, Sequence, TypeVar, Union
+from typing import Annotated, ClassVar, Generic, Optional, Any, Sequence, TypeVar, Union
 import typing
 import ctypes as C
-import sys
 from dataclasses import dataclass
 from utils import AnyCType
 
 """
 TODO:
-- endian-specific AStruct classes?
 - less verbose annotations!
-- get rid of the FieldsBuilder class? bake it into AStructMeta?
 """
 
 CStructureField = Union[tuple[str, type[AnyCType]], tuple[str, type[AnyCType], int]]
-CStructureFields = Sequence[CStructureField]
+CStructOrUnion = Union[C.Structure, C.Union]
+
 T = TypeVar('T')
-CT = TypeVar('CT', bound=AnyCType)
+CSU = TypeVar('CSU', bound=CStructOrUnion)
 
 
 @dataclass(frozen=True)
@@ -32,6 +30,9 @@ class CField:
     bitwidth: For integral ctypes, the width of the field in bits. See details
         in the documentation for the third element of the _fields_ tuples of a
         ctypes.Structure.
+
+    For an array of c_chars that represent a fixed-length string, consider
+    using CStrField, which handles the conversion between bytes and str.
     """
     ctype: type[AnyCType]
     bitwidth: Optional[int] = None
@@ -43,6 +44,11 @@ class CStrField:
 
     Use by annotating a class attribute in an AStruct like this:
         name: Annotated[str, CStrField(32, encoding='utf-8')]
+
+    The resulting property will transparently convert between bytes and str
+    using the given encoding and optionally enforcing null-termination.
+    Attempts to set the property to a string that is too long will result in an
+    IndexError.
 
     Attributes:
     max_length: The total number of bytes in the string, including the null
@@ -90,24 +96,84 @@ class CStrField:
         return bs
 
 
-class FieldsBuilder:
+class TypedStructBuilder(Generic[CSU]):
     CSTR_RAW_BYTES_PREFIX: ClassVar[str] = '_raw_'
+    ATTR_NAME_BLACKLIST: ClassVar[set[str]] = {'_anonymous_', '_pack_'}
 
-    @classmethod
-    def reify_annotation(cls, note: Any, __globals: dict[str, Any]) -> Any:
-        """Evaluate a type annotation using the given globals.
+    target_cls: type[CSU]
+    hints: dict[str, Any]
+    unannotated_hints: dict[str, Any]
 
-        Like a one-shot version of typing.get_type_hints. If the annotation is
-        not a string, simply returns it.
+    fields: list[CStructureField]
+
+    def __init__(self, target_cls: type[CSU]) -> None:
+        self.target_cls = target_cls
+        self.hints = typing.get_type_hints(target_cls, include_extras=True)
+        self.unannotated_hints = typing.get_type_hints(target_cls, include_extras=False)
+
+    def wrap(self) -> type[CSU]:
+        self.fields = []
+
+        if hasattr(self.target_cls, '_fields_'):
+            raise TypeError('typed_struct should not be used with classes that already have a '
+                            '_fields_ attribute')
+
+        for attr_name, hint in self.hints.items():
+            if attr_name in self.ATTR_NAME_BLACKLIST:
+                continue
+
+            if self.annotation_isinstance(hint, ClassVar):  # type: ignore[arg-type]
+                continue
+
+            unannotated_hint = self.unannotated_hints[attr_name]
+
+            if cfld := self.get_first_annotated_md_of_type(hint, CField):
+                self._typecheck_cfield(attr_name, cfld, unannotated_hint)
+                self._apply_cfield(attr_name, cfld)
+
+            if cstr := self.get_first_annotated_md_of_type(hint, CStrField):
+                self._typecheck_cstrfield(attr_name, cstr, unannotated_hint)
+                self._apply_cstrfield(attr_name, cstr)
+
+        self.target_cls._fields_ = self.fields[:]
+        return self.target_cls
+
+    def _typecheck_cfield(self, name: str, cfld: CField, unannotated_hint: Any) -> None:
+        if issubclass(cfld.ctype, C.Array) and not self.annotation_is_sequence(unannotated_hint):
+            raise TypeError(f'Array CField "{name}" should be an annotated Sequence')
+
+    def _apply_cfield(self, name: str, cfld: CField) -> None:
+        if cfld.bitwidth is not None:
+            self.fields.append((name, cfld.ctype, cfld.bitwidth))
+        else:
+            self.fields.append((name, cfld.ctype))
+
+    def _typecheck_cstrfield(self, name: str, cstr: CStrField, unannotated_hint: Any) -> None:
+        if not issubclass(unannotated_hint, str):
+            raise TypeError(f'CStrField "{name}" should be an annotated str')
+
+    def _apply_cstrfield(self, name: str, cstr: CStrField) -> None:
+        field_name = self.CSTR_RAW_BYTES_PREFIX + name
+        self.fields.append((field_name, C.c_char * cstr.max_length))
+
+        self._add_string_prop(name, field_name, cstr)
+
+    def _add_string_prop(self, prop_name: str, field_name: str, cstr: CStrField) -> None:
+        """Adds a property to transparently read and write a ctypes.c_char
+        array as a str.
+
+        Arguments:
+        name: The name of the property. The underlying ctypes array is assumed
+            to be a prefixed version of this string.
+        cstr: The CStrField instance defining the behavior of the string.
         """
+        def getter(self: Any) -> str:
+            return cstr.bytes_to_str(getattr(self, field_name))
 
-        # typing.get_type_hints unfortunately won't work for us because we
-        # don't have a class yet.
-        # TODO: error handling on this eval?
-        if isinstance(note, str):
-            return eval(note, __globals)
+        def setter(self: Any, value: str) -> None:
+            setattr(self, field_name, cstr.str_to_bytes(value))
 
-        return note
+        setattr(self.target_cls, prop_name, property(getter, setter))
 
     @classmethod
     def annotation_isinstance(cls, note: Any, note_cls: type) -> bool:
@@ -165,151 +231,25 @@ class FieldsBuilder:
 
         return None
 
-    @classmethod
-    def get_fields(cls,
-                   annotations: dict[str, Any],
-                   __globals: dict[str, Any]) -> tuple[CStructureFields, dict[str, CStrField]]:
-        """Builds a _fields_ value given a dict of type annotations.
 
-        Arguments:
-        annotations: The type annotations for fields on the class in
-            consideration (as pulled, e.g., from its __annotations__
-            attribute).
-        __globals: The dict of globals to use when evaluating the type
-            annotations in the first argument.
-
-        Returns a tuple of the _fields_ value and a dict of any CStrField
-        attributes, so they may be processed specially. The names of the
-        fields returned may not match the names of the attrs in the
-        annotations dict. For example, CStrField attributes are given a prefix
-        to hide raw access to their underlying bytes.
-
-        Only considers non-ClassVar fields annotated with either CField or
-        CStrField. The special ctypes attributes _anonymous_ and _pack_ are
-        explicitly skipped.
-        """
-        NAME_BLACKLIST = {'_anonymous_', '_pack_'}
-
-        fields: list[CStructureField] = []
-        cstr_fields: dict[str, CStrField] = {}
-
-        for attr_name, note in annotations.items():
-            if attr_name in NAME_BLACKLIST:
-                continue
-
-            note = cls.reify_annotation(note, __globals)
-
-            if cls.annotation_isinstance(note, ClassVar):  # type: ignore[arg-type]
-                continue
-
-            if cstr := cls.get_first_annotated_md_of_type(note, CStrField):
-                if not issubclass(cls.get_annotation_underlying_type(note), str):
-                    raise TypeError(f'CStrField "{attr_name}" should have the underlying type str')
-
-                field_name = cls.CSTR_RAW_BYTES_PREFIX + attr_name
-                fields.append((field_name, C.c_char * cstr.max_length))
-                cstr_fields[attr_name] = cstr
-            elif cfld := cls.get_first_annotated_md_of_type(note, CField):
-                if issubclass(cfld.ctype, C.Array):
-                    if not cls.annotation_is_sequence(note):
-                        raise TypeError(f'Array CField "{attr_name}" should have an underlying '
-                                        'type that is a Sequence')
-
-                if cfld.bitwidth is not None:
-                    fields.append((attr_name, cfld.ctype, cfld.bitwidth))
-                else:
-                    fields.append((attr_name, cfld.ctype))
-
-        return (fields, cstr_fields)
-
-
-# mypy doesn't like the dynamic base class; hence the ignore
-class AStructMeta(type(C.Structure)):  # type: ignore[misc]
-    """Metaclass for AStructs.
-
-    Handles massaging class-level type annotations into the _fields_ class
-    attr, before handing the work off to ctypes.Structure's metaclass.
-
-    Also adds transparent str properties for attrs annotated with the CStrField
-    metadata.
-    """
-
-    @classmethod
-    def add_string_prop(cls, target_cls: type, name: str, cstr: CStrField) -> None:
-        """Adds a property to transparently read and write a ctypes.c_char
-        array as a str.
-
-        Arguments:
-        target_cls: The class to which we are adding a property.
-        name: The name of the property. The underlying ctypes array is assumed
-            to be a prefixed version of this string.
-        cstr: The CStrField instance defining the behavior of the string.
-        """
-        raw_attr = FieldsBuilder.CSTR_RAW_BYTES_PREFIX + name
-
-        def getter(self: Any) -> str:
-            return cstr.bytes_to_str(getattr(self, raw_attr))
-
-        def setter(self: Any, value: str) -> None:
-            setattr(self, raw_attr, cstr.str_to_bytes(value))
-
-        setattr(target_cls, name, property(getter, setter))
-
-    def __new__(cls, name: str, bases: Any, classdict: dict[str, Any]) -> 'AStructMeta':
-        if '_fields_' in classdict:
-            raise ValueError('The _fields_ class variable should not be specified for a AStruct')
-
-        cls_globals = vars(sys.modules[cls.__module__])
-        notes: dict[str, Any] = classdict.get('__annotations__', {})
-
-        fields, cstr_fields = FieldsBuilder.get_fields(notes, cls_globals)
-        if len(fields):
-            classdict['_fields_'] = fields
-
-        struct_cls: 'AStructMeta' = super().__new__(cls, name, bases, classdict)  # type: ignore
-
-        # Expose CStrField fields as str properties
-        for prop_name, cstr in cstr_fields.items():
-            cls.add_string_prop(struct_cls, prop_name, cstr)
-
-        return struct_cls
-
-    # pylance can't really pick up on the existence of these methods because we
-    # have a dynamic base class. These passthroughs help it understand.
-    # Ignored for typing because we can't express that this metaclass will only
-    # be used for ctypes.Structure subclasses.
-    def __mul__(cls: type[CT], other: int) -> type[C.Array[CT]]:  # type: ignore
-        return super().__mul__(other)  # type: ignore
-
-    def __rmul__(cls: type[CT], other: int) -> type[C.Array[CT]]:  # type: ignore
-        return super().__rmul__(other)  # type: ignore
-
-
-class AStruct(C.Structure, metaclass=AStructMeta):
-    """A wrapper to allow declaring ctypes.Structure subclasses with type
+def typed_struct(cls: type[CSU]) -> type[CSU]:
+    """A decorator to allow declaring ctypes.Structure subclasses with type
     annotations instead of _fields_.
 
-    To use, create a subclass and add describe your fields with class-level
-    attributes, annotated with either CField or CStrField. AStruct generates
-    transparent string properties for fixed-length c_char arrays via the
-    CStrField metadata.
+    To use, decorate a Structure subclass with your fields as class-level
+    attributes, annotated with either CField or CStrField. Omit the _fields_
+    attribute entirely; typed_struct will generate it for you.
+
+    The decorator also adds transparent string properties for fixed-length
+    c_char arrays via the CStrField metadata.
 
     An example:
 
-    class Player(AStruct):
+    @typed_struct
+    class Player(Structure):
         level: Annotated[int, CField(c_uint16)]
         hp: Annotated[int, CField(c_uint16)]
         skill_aptitudes: Annotated[Sequence[int], CField(c_uint8 * 8)]
         name: Annotated[str, CStrField(16)]
-
-    Further subclassing and the standard _pack_ attribute work as they do with
-    normal ctype.Structure subclasses. You can nest an AStruct in the _fields_
-    of another ctype.Structure or via a type annotation in another AStruct. You
-    are also free to add instance and class methods to your AStruct subclasses.
     """
-    pass
-
-
-class PackedAStruct(AStruct):
-    """An AStruct with _pack_ = 1."""
-    _pack_: ClassVar[int] = 1
+    return TypedStructBuilder(cls).wrap()

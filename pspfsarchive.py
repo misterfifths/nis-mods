@@ -1,6 +1,6 @@
 import ctypes as C
 from typing import Annotated, ClassVar, Optional
-from astruct import PackedAStruct, CField, CStrField
+from astruct import typed_struct, CField, CStrField
 from utils import WriteableBuffer
 
 
@@ -13,8 +13,11 @@ PC_SWITCH_FILENAME_LEN = 44
 # https://github.com/xdanieldzd/Scarlet/blob/master/Scarlet.IO.ContainerFormats/PSPFSv1.cs
 
 
-class PSPFSHeader(PackedAStruct):
+@typed_struct
+class PSPFSHeader(C.Structure):
     MAGIC: ClassVar[str] = 'PSPFS_V1'
+
+    _pack_: ClassVar[int] = 1
 
     magic: Annotated[str, CStrField(8, null_terminated=False)]
     file_count: Annotated[int, CField(C.c_uint64)]
@@ -24,7 +27,10 @@ class PSPFSHeader(PackedAStruct):
             raise ValueError(f'Invalid magic in PSPFS header: "{self._header.magic}"')
 
 
-class PSPFSFileEntry(PackedAStruct):
+@typed_struct
+class PSPFSFileEntry(C.Structure):
+    _pack_: ClassVar[int] = 1
+
     filename: Annotated[str, CStrField(PC_SWITCH_FILENAME_LEN)]
     size: Annotated[int, CField(C.c_uint32)]
     offset: Annotated[int, CField(C.c_uint32)]

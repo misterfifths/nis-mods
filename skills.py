@@ -1,12 +1,15 @@
 import ctypes as C
 from startdatarchive import StartDatArchive
 from typing import Annotated, ClassVar, Optional, Sequence
-from astruct import PackedAStruct, CStrField, CField
+from astruct import typed_struct, CStrField, CField
 from countedtable import CountedTable
 from utils import WriteableBuffer
 
 
-class Skill(PackedAStruct):
+@typed_struct
+class Skill(C.Structure):
+    _pack_: ClassVar[int] = 1
+
     mana_cost: Annotated[int, CField(C.c_uint32)]
     id: Annotated[int, CField(C.c_uint16)]
     _unk1: Annotated[Sequence[int], CField(C.c_uint8 * 2)]

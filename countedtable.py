@@ -1,6 +1,6 @@
-from typing import Annotated, Sequence, TypeVar, Iterator, Union, overload
+from typing import Annotated, ClassVar, Sequence, TypeVar, Iterator, Union, overload
 import ctypes as C
-from astruct import PackedAStruct, CField
+from astruct import typed_struct, CField
 from utils import AnyCType, WriteableBuffer
 
 """
@@ -15,7 +15,10 @@ approach prevents us from embedding it in other Structures, or in an array.
 E = TypeVar('E', bound=AnyCType)
 
 
-class CountedTableHeader(PackedAStruct):
+@typed_struct
+class CountedTableHeader(C.Structure):
+    _pack_: ClassVar[int] = 1
+
     # TODO: unclear on the difference between these values. I assume one is
     # capacity and the other is the actual length, but in every example I
     # have, they're equal.
