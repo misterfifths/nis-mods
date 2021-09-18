@@ -1,8 +1,8 @@
 import ctypes as C
 from typing import Annotated, ClassVar, Optional
 from astruct import typed_struct, CField, CStrField
-from utils import WriteableBuffer
-
+from utils import WriteableBuffer, ro_cached_property
+import startdatarchive  # this is circular; not doing an "import from"
 
 # TODO: enable switching between these
 PSP_FILENAME_LEN = 24
@@ -58,3 +58,8 @@ class PSPFSArchive:
                 return file
 
         return None
+
+    # forward reference because of circularity
+    @ro_cached_property
+    def start_dat(self) -> 'startdatarchive.StartDatArchive':
+        return startdatarchive.StartDatArchive.from_pspfs(self)

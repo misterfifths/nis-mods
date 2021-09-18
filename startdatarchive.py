@@ -2,8 +2,9 @@ import ctypes as C
 from typing import Annotated, ClassVar, Optional, Sequence, TypeVar
 from astruct import typed_struct, CStrField, CField
 from countedtable import CountedTable
-from utils import AnyCType, WriteableBuffer
-from pspfsarchive import PSPFSArchive
+from utils import AnyCType, WriteableBuffer, ro_cached_property
+import pspfsarchive  # this is circular; not doing an "import from"
+import skills  # also circular
 import os
 
 E = TypeVar('E', bound=AnyCType)
@@ -60,8 +61,9 @@ class StartDatArchive:
                                                           file_entries_offset)
         self._make_file_wrappers()
 
+    # forward reference because of circularity
     @classmethod
-    def from_pspfs(cls, archive: PSPFSArchive) -> 'StartDatArchive':
+    def from_pspfs(cls, archive: 'pspfsarchive.PSPFSArchive') -> 'StartDatArchive':
         start_dat_entry = archive.find_file(cls.STANDARD_FILENAME)
         if start_dat_entry is None:
             raise FileNotFoundError(f'{cls.STANDARD_FILENAME} not found in archive')
@@ -103,3 +105,8 @@ class StartDatArchive:
             print(f'Extracting {f.filename} @ {f.offset:#x}: {f.size} bytes')
             with open(os.path.join(dirname, f.filename), 'wb') as o:
                 o.write(self._buffer[f.offset:f.offset + f.size])
+
+    # forward reference because of circularity
+    @ro_cached_property
+    def skilltab(self) -> 'skills.SkillTab':
+        return skills.SkillTab.from_startdat(self)
