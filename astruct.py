@@ -130,8 +130,7 @@ class TypedStructBuilder(Generic[CSU]):
             if cfld := self.get_first_annotated_md_of_type(hint, CField):
                 self._typecheck_cfield(attr_name, cfld, unannotated_hint)
                 self._apply_cfield(attr_name, cfld)
-
-            if cstr := self.get_first_annotated_md_of_type(hint, CStrField):
+            elif cstr := self.get_first_annotated_md_of_type(hint, CStrField):
                 self._typecheck_cstrfield(attr_name, cstr, unannotated_hint)
                 self._apply_cstrfield(attr_name, cstr)
 
