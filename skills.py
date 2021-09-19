@@ -1,5 +1,5 @@
 import ctypes as C
-from typing import Annotated, ClassVar, Optional, Sequence
+from typing import Annotated, ClassVar, Sequence
 from astruct import typed_struct, CStrField, CField
 from countedtable import CountedTable
 from utils import WriteableBuffer
@@ -32,9 +32,16 @@ class SkillTable(CountedTable[Skill]):
     def __init__(self, buffer: WriteableBuffer, offset: int = 0) -> None:
         super().__init__(Skill, buffer, offset)
 
-    def skill_for_name(self, name: str) -> Optional[Skill]:
-        for skill in self._entries:
+    def skill_for_name(self, name: str) -> Skill:
+        for skill in self:
             if skill.name == name:
                 return skill
 
-        return None
+        raise KeyError(f'No skill named "{name}"')
+
+    def skill_for_id(self, id: int) -> Skill:
+        for skill in self:
+            if skill.id == id:
+                return skill
+
+        raise KeyError(f'No skill with id {id:#x}')
