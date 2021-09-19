@@ -7,7 +7,7 @@ import enum
 
 
 @enum.unique
-class StatIndex(enum.IntEnum):
+class ClassStatIndex(enum.IntEnum):
     """The indexes into various ClassOrItem arrays that correspond to core
     stats."""
     HP = 0
@@ -46,7 +46,15 @@ class ClassOrItem(C.Structure):
     _unk2: Annotated[int, CField(C.c_uint8)]  # either 1 or 2, but no idea why
 
     # Aptitudes with the types of SP. Arranged in the order defined in the
-    # SPTypeIndex enumeration.
+    # SPTypeIndex enumeration. The range (via the strategy guide) seems to be
+    # this:
+    #  1 -  3: F
+    #  4 -  6: E
+    #  7 - 10: D
+    # 11 - 14: C
+    # 15 - 17: B
+    # 18 - 20: A
+    # 21+    : S
     sp_aptitudes: Annotated[Sequence[int], CField(C.c_uint8 * 7)]
     _zero1: Annotated[int, CField(C.c_int8)]
     rank: Annotated[int, CField(C.c_int8)]
@@ -61,20 +69,20 @@ class ClassOrItem(C.Structure):
     throw: Annotated[int, CField(C.c_uint16)]
 
     # Growth rates for the core stats, arranged in the order defined in the
-    # StatIndex enumeration.
+    # ClassStatIndex enumeration.
     growth_rates: Annotated[Sequence[int], CField(C.c_int16 * 7)]
     _zero2: Annotated[Sequence[int], CField(C.c_uint8 * 2)]
 
     # The effects on various stats of being confined into this item. Compute
     # the actual values by subtracting 100 from these integers. Array elements
-    # are in the order defined in the StatIndex enumeration.
+    # are in the order defined in the ClassStatIndex enumeration.
     confine_rates: Annotated[Sequence[int], CField(C.c_uint16 * 7)]
     _zero3: Annotated[Sequence[int], CField(C.c_uint8 * 2)]
 
     # The percentage of stats that are transferred to the wielder when an
     # object with this class is equipped. These values are never negative; you
     # do not need to subtract 100 like you do for confine_rates. Array elements
-    # are in the order defined in the StatIndex enumeration.
+    # are in the order defined in the ClassStatIndex enumeration.
     equip_rates: Annotated[Sequence[int], CField(C.c_int16 * 7)]
     _zero4: Annotated[Sequence[int], CField(C.c_uint8 * 2)]
     _five: Annotated[int, CField(C.c_uint16)]  # constant 5. weird.
@@ -84,7 +92,10 @@ class ClassOrItem(C.Structure):
     bor_bonus: Annotated[int, CField(C.c_uint16)]
     exp_bonus: Annotated[int, CField(C.c_uint16)]
     _unk5: Annotated[Sequence[int], CField(C.c_uint8 * 2)]
-    compat_category: Annotated[int, CField(C.c_uint16)]  # for fusion
+
+    # The fusion compatibility category ID for this class/item. See the
+    # fusioncompat module for tools to handle this.
+    compat_category_id: Annotated[int, CField(C.c_uint16)]
     remove: Annotated[int, CField(C.c_uint16)]
 
     # The IDs of the passive skills for this class. Unlike active skills, these
