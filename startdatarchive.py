@@ -7,6 +7,7 @@ from skills import SkillTable
 from dungeoncategory import DungeonCategoryTable
 from classoritem import ClassOrItemTable
 from fusioncompat import FusionCompatibilityTable
+from title import TitleTable
 import os
 
 E = TypeVar('E', bound=AnyCType)
@@ -115,3 +116,8 @@ class StartDatArchive:
     def compattab(self) -> FusionCompatibilityTable:
         file_entry = self.find_file(FusionCompatibilityTable.STANDARD_FILENAME)
         return FusionCompatibilityTable(self._buffer, file_entry.offset)
+
+    @ro_cached_property
+    def titletab(self) -> TitleTable:
+        file_entry = self.find_file(TitleTable.STANDARD_FILENAME)
+        return TitleTable(self._buffer, file_entry.offset)
