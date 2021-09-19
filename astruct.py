@@ -182,34 +182,39 @@ class TypedStructBuilder(Generic[CSU]):
         return typing.get_origin(note) is note_cls
 
     @classmethod
-    def get_annotation_underlying_type(cls, note: Any) -> type:
-        """Returns the underlying type of a type annotation.
+    def annotation_is_sequence(cls, unannotated_hint: Any) -> bool:
+        """Returns true if the given annotation is Sequence, a specialized
+        Sequence (e.g. Sequence[int]), or a subclass of Sequence."""
+        # A Sequence hint without a type parameter is easy:
+        if unannotated_hint is Sequence:
+            return True
 
-        Extracts the first argument for Annotated and ClassVar annotations
-        (e.g. int for ClassVar[int]). All other annotations are considered
-        as-is.
+        # Sequence itself turns into collections.abc.Sequence if you look at it
+        # at all. That also happens to be its origin.
+        sequence_origin = typing.get_origin(Sequence)
+        if sequence_origin is None:
+            return False  # shouldn't happen
 
-        Raises a TypeError if the the result is not a type.
-        """
-        if cls.annotation_isinstance(note, Annotated) or \
-           cls.annotation_isinstance(note, ClassVar):  # type: ignore
-            # the first argument is the real type
-            note = typing.get_args(note)[0]
-
-        return note
-
-    @classmethod
-    def annotation_is_sequence(cls, note: Any) -> bool:
-        """Returns true if the given anntation is Sequence, a specialized
-        Sequence (e.g. Sequence[int]), or a ClassVar or Annotated Sequence."""
-        underlying_type = cls.get_annotation_underlying_type(note)
-        if underlying_type is Sequence:
+        # A subclass of Sequence without a parameter will have Sequence's
+        # origin in its mro.
+        if sequence_origin in unannotated_hint.mro():
             return True
 
         # A specialized Sequence is actually an instance of a _GenericAlias,
-        # and its origin will actually be collections.abc.Sequence (which is
-        # Sequence's origin).
-        return typing.get_origin(underlying_type) is typing.get_origin(Sequence)
+        # and its origin will be Sequence's origin.
+        origin = typing.get_origin(unannotated_hint)
+        if origin is None:
+            return False
+
+        if origin is sequence_origin:
+            return True
+
+        # A specialized subclass of Sequence will have Sequence's origin in its
+        # mro.
+        if sequence_origin in origin.mro():
+            return True
+
+        return False
 
     @classmethod
     def get_first_annotated_md_of_type(cls, note: Any, md_cls: type[T]) -> Optional[T]:
