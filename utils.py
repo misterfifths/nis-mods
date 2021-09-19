@@ -1,4 +1,5 @@
-from typing import Any, Callable, ClassVar, Generic, Optional, TypeVar, Union
+from abc import abstractmethod
+from typing import Any, Callable, ClassVar, Generic, Optional, Sequence, TypeVar, Union
 from mmap import mmap
 import ctypes as C
 
@@ -80,3 +81,9 @@ class ro_cached_property(Generic[T, RT]):
             delattr(instance, cache_attr_name)
         except AttributeError:
             pass
+
+
+class FixedLengthMutableSequence(Sequence[T]):
+    """A Sequence whose items can be set but whose length cannot be changed."""
+    @abstractmethod
+    def __setitem__(self, i: int, o: T) -> None: ...
