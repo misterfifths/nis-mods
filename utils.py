@@ -12,6 +12,8 @@ TODO:
 - Better WriteableBuffer type? Feels like a MutableSequence[int] should be
 fine, but there's some weirdness between the types struct.unpack_from and
 ctypes.Structure.from_buffer want.
+- A type that expresses the reality of ctypes.Array better than Sequence/
+FixedLengthMutableSequence.
 """
 
 
@@ -27,11 +29,17 @@ T = TypeVar('T')
 RT = TypeVar('RT')
 
 
+class FixedLengthMutableSequence(Sequence[T]):
+    """A Sequence whose items can be set but whose length cannot be changed."""
+    @abstractmethod
+    def __setitem__(self, i: int, o: T) -> None: ...
+
+
 class ro_cached_property(Generic[T, RT]):
     """A decorator for a read-only, deletable cached property.
 
     Like cached_property but read-only and clearable.
-    Like stacked @property and @cached but lighter weight and clearable.
+    Like stacked @property and @cache but lighter weight and clearable.
 
     The decorated instance method is run only if its value is not cached. An
     existing cached value may be cleared by deleting the property, thus
@@ -81,9 +89,3 @@ class ro_cached_property(Generic[T, RT]):
             delattr(instance, cache_attr_name)
         except AttributeError:
             pass
-
-
-class FixedLengthMutableSequence(Sequence[T]):
-    """A Sequence whose items can be set but whose length cannot be changed."""
-    @abstractmethod
-    def __setitem__(self, i: int, o: T) -> None: ...
