@@ -93,7 +93,6 @@ class StartDatArchive:
             with open(os.path.join(dirname, f.filename), 'wb') as o:
                 o.write(self._buffer[f.offset:f.offset + f.size])
 
-    # forward reference because of circularity
     @ro_cached_property
     def skilltab(self) -> SkillTable:
         file_entry = self.find_file(SkillTable.STANDARD_FILENAME)
