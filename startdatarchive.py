@@ -5,6 +5,7 @@ from countedtable import CountedTable
 from utils import AnyCType, WriteableBuffer, ro_cached_property
 from skills import SkillTable
 from dungeoncategory import DungeonCategoryTable
+from classoritem import ClassOrItemTable
 import os
 
 E = TypeVar('E', bound=AnyCType)
@@ -103,3 +104,8 @@ class StartDatArchive:
     def cattab(self) -> DungeonCategoryTable:
         file_entry = self.find_file(DungeonCategoryTable.STANDARD_FILENAME)
         return DungeonCategoryTable(self._buffer, file_entry.offset)
+
+    @ro_cached_property
+    def classtab(self) -> ClassOrItemTable:
+        file_entry = self.find_file(ClassOrItemTable.STANDARD_FILENAME)
+        return ClassOrItemTable(self._buffer, file_entry.offset)
