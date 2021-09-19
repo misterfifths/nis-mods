@@ -4,6 +4,7 @@ from astruct import typed_struct, CStrField, CField
 from countedtable import CountedTable
 from utils import AnyCType, WriteableBuffer, ro_cached_property
 from skills import SkillTable
+from dungeoncategory import DungeonCategoryTable
 import os
 
 E = TypeVar('E', bound=AnyCType)
@@ -97,3 +98,8 @@ class StartDatArchive:
     def skilltab(self) -> SkillTable:
         file_entry = self.find_file(SkillTable.STANDARD_FILENAME)
         return SkillTable(self._buffer, file_entry.offset)
+
+    @ro_cached_property
+    def cattab(self) -> DungeonCategoryTable:
+        file_entry = self.find_file(DungeonCategoryTable.STANDARD_FILENAME)
+        return DungeonCategoryTable(self._buffer, file_entry.offset)
