@@ -3,7 +3,7 @@ from typing import Annotated, ClassVar, Sequence, TypeVar
 from astruct import typed_struct, CStrField, CField
 from countedtable import CountedTable
 from utils import AnyCType, WriteableBuffer, ro_cached_property
-from skills import SkillTab
+from skills import SkillTable
 import os
 
 E = TypeVar('E', bound=AnyCType)
@@ -95,6 +95,6 @@ class StartDatArchive:
 
     # forward reference because of circularity
     @ro_cached_property
-    def skilltab(self) -> SkillTab:
-        file_entry = self.find_file(SkillTab.STANDARD_FILENAME)
-        return SkillTab(self._buffer, file_entry.offset)
+    def skilltab(self) -> SkillTable:
+        file_entry = self.find_file(SkillTable.STANDARD_FILENAME)
+        return SkillTable(self._buffer, file_entry.offset)

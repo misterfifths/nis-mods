@@ -26,7 +26,7 @@ class Skill(C.Structure):
     _unk4: Annotated[Sequence[int], CField(C.c_uint8 * 7)]
 
 
-class SkillTab(CountedTable[Skill]):
+class SkillTable(CountedTable[Skill]):
     STANDARD_FILENAME: ClassVar[str] = 'magic.dat'
 
     def __init__(self, buffer: WriteableBuffer, offset: int = 0) -> None:
