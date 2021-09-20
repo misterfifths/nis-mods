@@ -77,11 +77,16 @@ class CArrayAttr:
         if not isinstance(length, int):
             raise TypeError('The length for C array type hints must be an int')
 
-        # The ctype is part of the verbatim base type of the hint's origin
+        # The ctype is part of the base type of the hint's origin. We can't
+        # consider mro though, because those are stripped/resolved down to
+        # actual classes (e.g. list[int], which is actually a _GenericAlias
+        # instance, shows up as the actual type list in mro). Luckily,
+        # __orig_bases__ has the verbatim base types as provided in the
+        # definition.
         origin = typing.get_origin(unannotated_hint)
         orig_bases: tuple[Any] = origin.__orig_bases__  # type: ignore
 
-        ctype: Optional[type[AnyCType]] = None
+        ctype = None
         for orig_base in orig_bases:
             if ctype := cls._get_ctype_from_array_base(orig_base):
                 break

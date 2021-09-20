@@ -59,7 +59,7 @@ class Encoding:
     Attributes:
     encoding: The encoding of the string. Default: 'shift-jis'.
     errors: What to do if an error is encountered in en/decoding the string.
-    One of the constants from bytes.decode. Default: 'strict'.
+        One of the constants from bytes.decode. Default: 'strict'.
     """
     encoding: str = 'shift-jis'
     errors: str = 'strict'
