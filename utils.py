@@ -11,11 +11,11 @@ ctypes.Structure.from_buffer want.
 
 WriteableBuffer = Union[bytearray, memoryview, mmap]
 
-T = TypeVar('T')
-RT = TypeVar('RT')
+_T = TypeVar('_T')
+_RT = TypeVar('_RT')
 
 
-class ro_cached_property(Generic[T, RT]):
+class ro_cached_property(Generic[_T, _RT]):
     """A decorator for a read-only, deletable cached property.
 
     Like cached_property but read-only and clearable.
@@ -31,10 +31,10 @@ class ro_cached_property(Generic[T, RT]):
     """
     CACHE_ATTR_PREFIX: ClassVar[str] = "__cached_"
 
-    func: Callable[[T], RT]
+    func: Callable[[_T], _RT]
     attr_name: Optional[str]
 
-    def __init__(self, func: Callable[[T], RT]) -> None:
+    def __init__(self, func: Callable[[_T], _RT]) -> None:
         self.func = func
         self.attr_name = None
         self.__doc__ = func.__doc__
@@ -46,7 +46,7 @@ class ro_cached_property(Generic[T, RT]):
             raise TypeError("Cannot assign the same ro_cached_property to two different names "
                             f"({self.attr_name!r} and {name!r}).")
 
-    def __get__(self, instance: T, owner: Any = None) -> RT:
+    def __get__(self, instance: _T, owner: Any = None) -> _RT:
         if self.attr_name is None:
             raise TypeError("Cannot use ro_cached_property instance without calling __set_name__ "
                             "on it.")
@@ -59,7 +59,7 @@ class ro_cached_property(Generic[T, RT]):
             setattr(instance, cache_attr_name, val)
             return val
 
-    def __delete__(self, instance: T) -> None:
+    def __delete__(self, instance: _T) -> None:
         if self.attr_name is None:
             raise TypeError("Cannot use ro_cached_property instance without calling __set_name__ "
                             "on it.")
