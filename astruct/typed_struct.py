@@ -67,7 +67,7 @@ class _TypedStructBuilder(Generic[_CSU]):
 
     def _apply_cstr_field(self, name: str, cstrattr: CStrAttr) -> None:
         field_name = self.CSTR_RAW_BYTES_PREFIX + name
-        self.fields.append((field_name, C.c_char * cstrattr.max_length))
+        self.fields.append((field_name, cstrattr.ctype * cstrattr.max_length))
 
         self._add_string_prop(name, field_name, cstrattr)
 

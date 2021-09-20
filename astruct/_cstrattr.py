@@ -1,5 +1,6 @@
-from typing import Any, Optional
+from typing import Any, Optional, Union
 import typing
+import ctypes as C
 from dataclasses import dataclass
 from ._type_hint_utils import hint_is, first_annotated_md_of_type
 from .type_hints.metadata import Encoding, NotNullTerminated
@@ -11,13 +12,10 @@ class CStrAttr:
     """Represents the configuration of a CStr or CWStr attribute on a
     typed_struct."""
     max_length: int
+    ctype: Union[type[C.c_char], type[C.c_wchar]]
     encoding: str = 'shift-jis'
     errors: str = 'strict'
     null_terminated: bool = True
-
-    @classmethod
-    def _is_cstr_hint(cls, hint: Any, unannotated_hint: Any) -> bool:
-        return hint_is(unannotated_hint, CStr) or hint_is(unannotated_hint, CWStr)
 
     @classmethod
     def from_type_hint(cls, hint: Any, unannotated_hint: Any) -> Optional['CStrAttr']:
@@ -29,11 +27,15 @@ class CStrAttr:
         If the hint is not for CStr, CWStr, or an Annotated version thereof,
         returns None.
         """
-        if not cls._is_cstr_hint(hint, unannotated_hint):
+        if hint_is(unannotated_hint, CStr):
+            ctype = C.c_char
+        elif hint_is(unannotated_hint, CWStr):
+            ctype = C.c_wchar
+        else:
             return None
 
         max_length = typing.get_args(unannotated_hint)[0]
-        res = cls(max_length)
+        res = cls(max_length, ctype)
 
         if encoding_md := first_annotated_md_of_type(hint, Encoding):
             res.encoding = encoding_md.encoding
