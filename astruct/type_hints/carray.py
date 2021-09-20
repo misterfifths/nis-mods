@@ -1,12 +1,13 @@
 from typing import Any, Iterable, Iterator, Protocol, TypeVar, overload
 from typing import _GenericAlias  # type: ignore
 from abc import abstractmethod
-from .ctypes_aliases import AnyCType
+from .ctypes_aliases import IntCType, FloatCType
 
 # pyright: reportUnusedClass=none
 
 _T = TypeVar('_T')
-_CT_co = TypeVar('_CT_co', bound=AnyCType, covariant=True)
+_IntCT_co = TypeVar('_IntCT_co', bound=IntCType, covariant=True)
+_FloatCT_co = TypeVar('_FloatCT_co', bound=FloatCType, covariant=True)
 
 
 # Ideally this would start with Sequence and add things from there, but after
@@ -48,12 +49,12 @@ class CArray(Iterable[_T], Protocol[_T]):
     def __reversed__(self) -> Iterator[_T]: ...
 
 
-class _CIntArray(CArray[int], Protocol[_CT_co]):
+class _CIntArray(CArray[int], Protocol[_IntCT_co]):
     def __class_getitem__(cls, params: Any) -> _GenericAlias:  # type: ignore
         # Not much use in typechecking; these are our internal classes
         return _GenericAlias(cls, params)  # type: ignore
 
 
-class _CFloatArray(CArray[float], Protocol[_CT_co]):
+class _CFloatArray(CArray[float], Protocol[_FloatCT_co]):
     def __class_getitem__(cls, params: Any) -> _GenericAlias:  # type: ignore
         return _GenericAlias(cls, params)  # type: ignore
