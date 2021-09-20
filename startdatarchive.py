@@ -1,14 +1,16 @@
+from typing import ClassVar, Sequence, TypeVar
 import ctypes as C
-from typing import Annotated, ClassVar, Sequence, TypeVar
-from astruct import typed_struct, CStrField, CField
+import os
+from astruct import typed_struct
+from astruct.type_hints import *
 from countedtable import CountedTable
-from utils import AnyCType, WriteableBuffer, ro_cached_property
+from utils import WriteableBuffer, ro_cached_property
+
 from skills import SkillTable
 from dungeoncategory import DungeonCategoryTable
 from classoritem import ClassOrItemTable
 from fusioncompat import FusionCompatibilityTable
 from title import TitleTable
-import os
 
 E = TypeVar('E', bound=AnyCType)
 
@@ -17,16 +19,16 @@ E = TypeVar('E', bound=AnyCType)
 class StartDatHeader(C.Structure):
     _pack_: ClassVar[int] = 1
 
-    file_count: Annotated[int, CField(C.c_uint32)]  # TODO: this is probably 64 bits
-    _zero: Annotated[Sequence[int], CField(C.c_uint32 * 3)]
+    file_count: CUInt32  # TODO: this is probably 64 bits
+    _zero: CUInt32Array[3]
 
 
 @typed_struct
 class RawStartDatFileEntry(C.Structure):
     _pack_: ClassVar[int] = 1
 
-    raw_end_offset: Annotated[int, CField(C.c_uint32)]
-    filename: Annotated[str, CStrField(28)]
+    raw_end_offset: CUInt32
+    filename: CStr[28]
 
 
 # TODO: combine this with RawStartDatFileEntry?

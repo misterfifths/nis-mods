@@ -1,7 +1,8 @@
-from typing import Annotated, ClassVar, Sequence, TypeVar, Iterator, Union, overload
+from typing import ClassVar, Sequence, TypeVar, Iterator, Union, overload
 import ctypes as C
-from astruct import typed_struct, CField
-from utils import AnyCType, WriteableBuffer
+from astruct import typed_struct
+from astruct.type_hints import *
+from utils import WriteableBuffer
 
 """
 TODO?
@@ -22,8 +23,8 @@ class CountedTableHeader(C.Structure):
     # TODO: unclear on the difference between these values. I assume one is
     # capacity and the other is the actual length, but in every example I
     # have, they're equal.
-    capacity: Annotated[int, CField(C.c_uint32)]
-    entry_count: Annotated[int, CField(C.c_uint32)]
+    capacity: CUInt32
+    entry_count: CUInt32
 
     def validate(self) -> None:
         if self.capacity != self.entry_count:

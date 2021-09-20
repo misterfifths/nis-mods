@@ -1,6 +1,7 @@
+from typing import ClassVar
 import ctypes as C
-from typing import Annotated, ClassVar, Sequence
-from astruct import typed_struct, CStrField, CField
+from astruct import typed_struct
+from astruct.type_hints import *
 from countedtable import CountedTable
 from utils import WriteableBuffer
 
@@ -9,21 +10,21 @@ from utils import WriteableBuffer
 class Skill(C.Structure):
     _pack_: ClassVar[int] = 1
 
-    mana_cost: Annotated[int, CField(C.c_uint32)]
-    id: Annotated[int, CField(C.c_uint16)]
-    _unk1: Annotated[Sequence[int], CField(C.c_uint8 * 2)]
-    sp_cost: Annotated[int, CField(C.c_uint16)]
-    _zero: Annotated[Sequence[int], CField(C.c_uint8 * 2)]  # maybe sp_cost is 32 bits?
-    name: Annotated[str, CStrField(22)]
-    description: Annotated[str, CStrField(70)]
-    _unk2: Annotated[Sequence[int], CField(C.c_uint8 * 8)]
-    sp_type: Annotated[int, CField(C.c_uint8)]
-    shape: Annotated[int, CField(C.c_uint8)]  # 0=sphere, 1=cylinder, 2=wedge
-    _unk3: Annotated[Sequence[int], CField(C.c_uint8 * 3)]
-    distance: Annotated[int, CField(C.c_uint8)]
-    range: Annotated[int, CField(C.c_uint8)]
-    vertical: Annotated[Sequence[int], CField(C.c_uint8 * 2)]
-    _unk4: Annotated[Sequence[int], CField(C.c_uint8 * 7)]
+    mana_cost: CUInt32
+    id: CUInt16
+    _unk1: CUInt8Array[2]
+    sp_cost: CUInt16
+    _zero: CUInt8Array[2]  # maybe sp_cost is 32 bits?
+    name: CStr[22]
+    description: CStr[70]
+    _unk2: CUInt8Array[8]
+    sp_type: CUInt8
+    shape: CUInt8  # 0=sphere, 1=cylinder, 2=wedge
+    _unk3: CUInt8Array[3]
+    distance: CUInt8
+    range: CUInt8
+    vertical: CUInt8Array[2]
+    _unk4: CUInt8Array[7]
 
 
 class SkillTable(CountedTable[Skill]):

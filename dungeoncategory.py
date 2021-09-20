@@ -1,9 +1,10 @@
+from typing import ClassVar, Iterable
 import ctypes as C
-from typing import Annotated, ClassVar, Iterable, Sequence
-from astruct import typed_struct, CStrField, CField
-from countedtable import CountedTable
-from utils import FixedLengthMutableSequence, WriteableBuffer
 import enum
+from astruct import typed_struct
+from astruct.type_hints import *
+from countedtable import CountedTable
+from utils import WriteableBuffer
 
 
 @enum.unique
@@ -18,8 +19,8 @@ class DungeonCategory(C.Structure):
 
     MAX_MEMBER_COUNT: ClassVar[int] = 20
 
-    id: Annotated[int, CField(C.c_uint8)]
-    _zero: Annotated[int, CField(C.c_uint8)]
+    id: CUInt8
+    _zero: CUInt8
 
     # These are the IDs of the members of this category. They are either
     # literal item/enemy class IDs, or encoded references to other categories
@@ -29,20 +30,20 @@ class DungeonCategory(C.Structure):
     # and all remaining slots should be zero.
     # You likely want to use the members property instead of this, as it
     # decodes the integers for you.
-    member_codes: Annotated[FixedLengthMutableSequence[int], CField(C.c_uint16 * MAX_MEMBER_COUNT)]
-    _zero2: Annotated[int, CField(C.c_uint16)]  # always zero. Perhaps part of member_codes?
-    name: Annotated[str, CStrField(8)]  # this is probably length 7
-    _zero3: Annotated[Sequence[int], CField(C.c_uint8 * 3)]
+    member_codes: CUInt16Array[MAX_MEMBER_COUNT]
+    _zero2: CUInt16  # always zero. Perhaps part of member_codes?
+    name: CStr[8]  # this is probably length 7
+    _zero3: CUInt8Array[3]
 
     # The minimum level at which a Dungeon Monk can roll this category.
-    monk_level_req: Annotated[int, CField(C.c_uint8)]
+    monk_level_req: CUInt8
 
     # Likelihood of this category rolling. Translate to a percentage by
     # calculating 100% - this value; a category with rarity 100 never rolls.
-    rarity: Annotated[int, CField(C.c_uint8)]
+    rarity: CUInt8
 
     # The number of valid entries in member_codes.
-    member_count: Annotated[int, CField(C.c_uint8)]
+    member_count: CUInt8
 
     @classmethod
     def decode_member_code(cls, code: int) -> tuple[MemberKind, int]:

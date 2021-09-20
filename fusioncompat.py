@@ -1,8 +1,9 @@
+from typing import ClassVar
 import ctypes as C
-from typing import Annotated, ClassVar, Sequence
-from astruct import typed_struct, CField
+from astruct import typed_struct
+from astruct.type_hints import *
 from countedtable import CountedTable
-from utils import FixedLengthMutableSequence, WriteableBuffer
+from utils import WriteableBuffer
 
 
 # Couldn't find an in-game source of these names; these are taken from the
@@ -95,9 +96,9 @@ followed by some padding zero bytes.
 class FusionCompatibilityRow(C.Structure):
     _pack_: ClassVar[int] = 1
 
-    compat_category_id: Annotated[int, CField(C.c_uint8)]
-    compat_map: Annotated[FixedLengthMutableSequence[int], CField(C.c_uint8 * 26)]
-    _zero: Annotated[Sequence[int], CField(C.c_uint8 * 37)]
+    compat_category_id: CUInt8
+    compat_map: CUInt8Array[26]
+    _zero: CUInt8Array[37]
 
 
 class FusionCompatibilityTable(CountedTable[FusionCompatibilityRow]):
@@ -109,7 +110,7 @@ class FusionCompatibilityTable(CountedTable[FusionCompatibilityRow]):
         super().__init__(FusionCompatibilityRow, buffer, offset)
 
         # TODO: list() here is working around the fact that ctypes.Arrays
-        # aren't really Sequences. They don't have, e.g., index().
+        # don't have index().
         self._column_order = list(self[0].compat_map)
 
     def _column_idx_for_id(self, id: int) -> int:

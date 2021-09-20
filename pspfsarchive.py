@@ -1,8 +1,9 @@
-import ctypes as C
 from typing import Annotated, ClassVar
-from astruct import typed_struct, CField, CStrField
-from utils import WriteableBuffer, ro_cached_property
+import ctypes as C
+from astruct import typed_struct
+from astruct.type_hints import *
 from startdatarchive import StartDatArchive
+from utils import WriteableBuffer, ro_cached_property
 
 # TODO: enable switching between these
 PSP_FILENAME_LEN = 24
@@ -19,8 +20,8 @@ class PSPFSHeader(C.Structure):
 
     _pack_: ClassVar[int] = 1
 
-    magic: Annotated[str, CStrField(8, null_terminated=False)]
-    file_count: Annotated[int, CField(C.c_uint64)]
+    magic: Annotated[CStr[8], NotNullTerminated()]
+    file_count: CUInt64
 
     def validate(self) -> None:
         if self.magic != self.MAGIC:
@@ -31,9 +32,9 @@ class PSPFSHeader(C.Structure):
 class PSPFSFileEntry(C.Structure):
     _pack_: ClassVar[int] = 1
 
-    filename: Annotated[str, CStrField(PC_SWITCH_FILENAME_LEN)]
-    size: Annotated[int, CField(C.c_uint32)]
-    offset: Annotated[int, CField(C.c_uint32)]
+    filename: CStr[PC_SWITCH_FILENAME_LEN]
+    size: CUInt32
+    offset: CUInt32
 
 
 class PSPFSArchive:

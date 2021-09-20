@@ -1,9 +1,10 @@
+from typing import ClassVar
 import ctypes as C
-from typing import Annotated, ClassVar, Sequence
-from astruct import typed_struct, CStrField, CField
+import enum
+from astruct import typed_struct
+from astruct.type_hints import *
 from countedtable import CountedTable
 from utils import WriteableBuffer
-import enum
 
 
 @enum.unique
@@ -38,12 +39,12 @@ class ClassOrItem(C.Structure):
 
     # The name of an instance of this class or item. For generic classes and
     # items, it's the same as class_name.
-    name: Annotated[str, CStrField(22)]  # TODO: length discrepancy here?
-    class_name: Annotated[str, CStrField(21)]
-    description: Annotated[str, CStrField(73)]
-    _unk1: Annotated[Sequence[int], CField(C.c_uint8 * 6)]
-    jump: Annotated[int, CField(C.c_uint8)]
-    _unk2: Annotated[int, CField(C.c_uint8)]  # either 1 or 2, but no idea why
+    name: CStr[22]  # TODO: length discrepancy between this and class_name?
+    class_name: CStr[21]
+    description: CStr[73]
+    _unk1: CUInt8Array[6]
+    jump: CUInt8
+    _unk2: CUInt8  # either 1 or 2, but no idea why
 
     # Aptitudes with the types of SP. Arranged in the order defined in the
     # SPTypeIndex enumeration. The range (via the strategy guide) seems to be
@@ -55,72 +56,72 @@ class ClassOrItem(C.Structure):
     # 15 - 17: B
     # 18 - 20: A
     # 21+    : S
-    sp_aptitudes: Annotated[Sequence[int], CField(C.c_uint8 * 7)]
-    _zero1: Annotated[int, CField(C.c_int8)]
-    rank: Annotated[int, CField(C.c_int8)]
-    guard: Annotated[int, CField(C.c_uint16)]
-    _unk3: Annotated[int, CField(C.c_uint8)]  # some sort of flag for bosses?
-    id: Annotated[int, CField(C.c_uint16)]
+    sp_aptitudes: CUInt8Array[7]
+    _zero1: CUInt8
+    rank: CUInt8
+    guard: CUInt16
+    _unk3: CUInt8  # some sort of flag for bosses?
+    id: CUInt16
 
     # If the visuals of this class/item are based on another, this field is set
     # to the ID of the other class/item. Otherwise it's equal to id.
-    visual_id: Annotated[int, CField(C.c_uint16)]
-    _unk4: Annotated[Sequence[int], CField(C.c_uint8 * 4)]
-    throw: Annotated[int, CField(C.c_uint16)]
+    visual_id: CUInt16
+    _unk4: CUInt8Array[4]
+    throw: CUInt16
 
     # Growth rates for the core stats, arranged in the order defined in the
     # ClassStatIndex enumeration.
-    growth_rates: Annotated[Sequence[int], CField(C.c_int16 * 7)]
-    _zero2: Annotated[Sequence[int], CField(C.c_uint8 * 2)]
+    growth_rates: CUInt16Array[7]
+    _zero2: CUInt8Array[2]
 
     # The effects on various stats of being confined into this item. Compute
     # the actual values by subtracting 100 from these integers. Array elements
     # are in the order defined in the ClassStatIndex enumeration.
-    confine_rates: Annotated[Sequence[int], CField(C.c_uint16 * 7)]
-    _zero3: Annotated[Sequence[int], CField(C.c_uint8 * 2)]
+    confine_rates: CUInt16Array[7]
+    _zero3: CUInt8Array[2]
 
     # The percentage of stats that are transferred to the wielder when an
     # object with this class is equipped. These values are never negative; you
     # do not need to subtract 100 like you do for confine_rates. Array elements
     # are in the order defined in the ClassStatIndex enumeration.
-    equip_rates: Annotated[Sequence[int], CField(C.c_int16 * 7)]
-    _zero4: Annotated[Sequence[int], CField(C.c_uint8 * 2)]
-    _five: Annotated[int, CField(C.c_uint16)]  # constant 5. weird.
-    move: Annotated[int, CField(C.c_uint16)]
-    _zero5: Annotated[Sequence[int], CField(C.c_uint8 * 2)]
-    steal: Annotated[int, CField(C.c_uint16)]
-    bor_bonus: Annotated[int, CField(C.c_uint16)]
-    exp_bonus: Annotated[int, CField(C.c_uint16)]
-    _unk5: Annotated[Sequence[int], CField(C.c_uint8 * 2)]
+    equip_rates: CUInt16Array[7]
+    _zero4: CUInt8Array[2]
+    _five: CUInt16  # constant 5. weird.
+    move: CUInt16
+    _zero5: CUInt8Array[2]
+    steal: CUInt16
+    bor_bonus: CUInt16
+    exp_bonus: CUInt16
+    _unk5: CUInt8Array[2]
 
     # The fusion compatibility category ID for this class/item. See the
     # fusioncompat module for tools to handle this.
-    compat_category_id: Annotated[int, CField(C.c_uint16)]
-    remove: Annotated[int, CField(C.c_uint16)]
+    compat_category_id: CUInt16
+    remove: CUInt16
 
     # The IDs of the passive skills for this class. Unlike active skills, these
     # are available from level 1 for the character. The experience level for
     # each passive skill is at the corresponding index in the
     # passive_skill_levels list. The list is terminated with a zero.
-    passive_skill_ids: Annotated[Sequence[int], CField(C.c_uint16 * 8)]
+    passive_skill_ids: CUInt16Array[8]
 
     # The experience level known passive skills. The order is the same as the
     # IDs in passive_skill_ids.
-    passive_skill_levels: Annotated[Sequence[int], CField(C.c_uint16 * 8)]
+    passive_skill_levels: CUInt16Array[8]
 
     # The IDs of the active skills learned by this class. Unlike passive
     # skills, these are unlocked when a character reaches a certain level.
     # Those levels are in the corresponding index in the
     # active_skill_learn_levels list. The list is terminated with a zero.
-    active_skill_ids: Annotated[Sequence[int], CField(C.c_uint16 * 16)]
+    active_skill_ids: CUInt16Array[16]
 
     # The level at which a character learns active skills. The oder is the
     # same as the IDs in active_skill_ids.
-    active_skill_learn_levels: Annotated[Sequence[int], CField(C.c_uint16 * 16)]
+    active_skill_learn_levels: CUInt16Array[16]
 
     # Zero for everyone but Ash and Marona
-    _unk6: Annotated[Sequence[int], CField(C.c_uint8 * 2)]
-    _zero6: Annotated[Sequence[int], CField(C.c_uint8 * 2)]
+    _unk6: CUInt8Array[2]
+    _zero6: CUInt8Array[2]
 
 
 class ClassOrItemTable(CountedTable[ClassOrItem]):
