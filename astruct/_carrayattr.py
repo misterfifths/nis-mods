@@ -28,8 +28,12 @@ class CArrayAttr:
 
         # Our helper aliases, like CUInt8Array, will have CArray in the mro of
         # their origin
-        if CArray in origin.mro():
-            return True
+        try:
+            if CArray in origin.mro():
+                return True
+        except AttributeError:
+            # Not everything has .mro, e.g. Final[int]
+            pass
 
         return False
 

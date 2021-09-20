@@ -41,7 +41,12 @@ def is_ctype_subclass(t: type) -> bool:
     if is_builtin_ctype(t):
         return True
 
-    for supertype in t.mro():
+    try:
+        mro = t.mro()
+    except AttributeError:
+        return False
+
+    for supertype in mro:
         if is_builtin_ctype(supertype):
             return True
 
