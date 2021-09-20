@@ -1,4 +1,4 @@
-from typing import ClassVar
+from typing import Final
 import ctypes as C
 import enum
 from astruct import typed_struct
@@ -39,7 +39,7 @@ class TitleStatIndex(enum.IntEnum):
 
 @typed_struct
 class Title(C.Structure):
-    _pack_: ClassVar[int] = 1
+    _pack_ = 1
 
     id: CUInt16
     name: CStr[9]  # max length w/o nulls seems to be 7
@@ -110,7 +110,7 @@ class Title(C.Structure):
 
 
 class TitleTable(CountedTable[Title]):
-    STANDARD_FILENAME: ClassVar[str] = 'ItemPowUp.dat'
+    STANDARD_FILENAME: Final = 'ItemPowUp.dat'
 
     def __init__(self, buffer: WriteableBuffer, offset: int = 0) -> None:
         super().__init__(Title, buffer, offset)

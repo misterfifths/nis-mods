@@ -1,4 +1,4 @@
-from typing import ClassVar, Generic, Any, TypeVar, Union
+from typing import ClassVar, Final, Generic, Any, TypeVar, Union
 import typing
 import ctypes as C
 from ._type_hint_utils import hint_is
@@ -14,8 +14,8 @@ _CSU = TypeVar('_CSU', bound=_CStructOrUnion)
 
 
 class _TypedStructBuilder(Generic[_CSU]):
-    CSTR_RAW_BYTES_PREFIX: ClassVar[str] = '_raw_'
-    ATTR_NAME_BLACKLIST: ClassVar[set[str]] = {'_anonymous_', '_pack_'}
+    CSTR_RAW_BYTES_PREFIX: Final = '_raw_'
+    ATTR_NAME_BLACKLIST: Final = {'_anonymous_', '_pack_'}
 
     target_cls: type[_CSU]
     hints: dict[str, Any]
@@ -40,6 +40,9 @@ class _TypedStructBuilder(Generic[_CSU]):
                 continue
 
             if hint_is(hint, ClassVar):  # type: ignore[arg-type]
+                continue
+
+            if hint_is(hint, Final):
                 continue
 
             unannotated_hint = self.unannotated_hints[attr_name]

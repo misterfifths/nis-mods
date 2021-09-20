@@ -1,4 +1,4 @@
-from typing import ClassVar, Iterable
+from typing import Final, Iterable
 import ctypes as C
 import enum
 from astruct import typed_struct
@@ -15,9 +15,9 @@ class MemberKind(enum.IntEnum):
 
 @typed_struct
 class DungeonCategory(C.Structure):
-    _pack_: ClassVar[int] = 1
+    MAX_MEMBER_COUNT: Final = 20
 
-    MAX_MEMBER_COUNT: ClassVar[int] = 20
+    _pack_ = 1
 
     id: CUInt8
     _zero: CUInt8
@@ -93,7 +93,7 @@ class DungeonCategory(C.Structure):
 
 
 class DungeonCategoryTable(CountedTable[DungeonCategory]):
-    STANDARD_FILENAME: ClassVar[str] = 'runit.dat'
+    STANDARD_FILENAME: Final = 'runit.dat'
 
     def __init__(self, buffer: WriteableBuffer, offset: int = 0) -> None:
         super().__init__(DungeonCategory, buffer, offset)

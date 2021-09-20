@@ -1,4 +1,4 @@
-from typing import Annotated, ClassVar
+from typing import Annotated, Final
 import ctypes as C
 from astruct import typed_struct
 from astruct.type_hints import *
@@ -16,9 +16,9 @@ PC_SWITCH_FILENAME_LEN = 44
 
 @typed_struct
 class PSPFSHeader(C.Structure):
-    MAGIC: ClassVar[str] = 'PSPFS_V1'
+    MAGIC: Final = 'PSPFS_V1'
 
-    _pack_: ClassVar[int] = 1
+    _pack_ = 1
 
     magic: Annotated[CStr[8], NotNullTerminated()]
     file_count: CUInt64
@@ -30,7 +30,7 @@ class PSPFSHeader(C.Structure):
 
 @typed_struct
 class PSPFSFileEntry(C.Structure):
-    _pack_: ClassVar[int] = 1
+    _pack_ = 1
 
     filename: CStr[PC_SWITCH_FILENAME_LEN]
     size: CUInt32

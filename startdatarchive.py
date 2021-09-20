@@ -1,4 +1,4 @@
-from typing import ClassVar, Sequence, TypeVar
+from typing import Final, Sequence, TypeVar
 import ctypes as C
 import os
 from astruct import typed_struct
@@ -17,7 +17,7 @@ E = TypeVar('E', bound=AnyCType)
 
 @typed_struct
 class StartDatHeader(C.Structure):
-    _pack_: ClassVar[int] = 1
+    _pack_ = 1
 
     file_count: CUInt32  # TODO: this is probably 64 bits
     _zero: CUInt32Array[3]
@@ -25,7 +25,7 @@ class StartDatHeader(C.Structure):
 
 @typed_struct
 class RawStartDatFileEntry(C.Structure):
-    _pack_: ClassVar[int] = 1
+    _pack_ = 1
 
     raw_end_offset: CUInt32
     filename: CStr[28]
@@ -45,7 +45,7 @@ class StartDatFileEntry:
 
 
 class StartDatArchive:
-    STANDARD_FILENAME: ClassVar[str] = 'START.DAT'
+    STANDARD_FILENAME: Final = 'START.DAT'
 
     _buffer: WriteableBuffer
     _base_offset: int

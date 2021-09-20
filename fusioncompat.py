@@ -1,4 +1,4 @@
-from typing import ClassVar
+from typing import Final
 import ctypes as C
 from astruct import typed_struct
 from astruct.type_hints import *
@@ -94,7 +94,7 @@ followed by some padding zero bytes.
 
 @typed_struct
 class FusionCompatibilityRow(C.Structure):
-    _pack_: ClassVar[int] = 1
+    _pack_ = 1
 
     compat_category_id: CUInt8
     compat_map: CUInt8Array[26]
@@ -102,7 +102,7 @@ class FusionCompatibilityRow(C.Structure):
 
 
 class FusionCompatibilityTable(CountedTable[FusionCompatibilityRow]):
-    STANDARD_FILENAME: ClassVar[str] = 'aishou.dat'
+    STANDARD_FILENAME: Final = 'aishou.dat'
 
     _column_order: list[int]
 

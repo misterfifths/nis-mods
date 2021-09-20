@@ -1,4 +1,4 @@
-from typing import Any, Callable, ClassVar, Generic, Optional, TypeVar, Union
+from typing import Any, Callable, Final, Generic, Optional, TypeVar, Union
 from mmap import mmap
 
 """
@@ -29,7 +29,7 @@ class ro_cached_property(Generic[_T, _RT]):
     can only be used on classes that allow the addition of abritrary
     attributes.
     """
-    CACHE_ATTR_PREFIX: ClassVar[str] = "__cached_"
+    CACHE_ATTR_PREFIX: Final = "__cached_"
 
     func: Callable[[_T], _RT]
     attr_name: Optional[str]

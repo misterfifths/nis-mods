@@ -1,4 +1,4 @@
-from typing import ClassVar
+from typing import Final
 import ctypes as C
 from astruct import typed_struct
 from astruct.type_hints import *
@@ -8,7 +8,7 @@ from utils import WriteableBuffer
 
 @typed_struct
 class Skill(C.Structure):
-    _pack_: ClassVar[int] = 1
+    _pack_ = 1
 
     mana_cost: CUInt32
     id: CUInt16
@@ -28,7 +28,7 @@ class Skill(C.Structure):
 
 
 class SkillTable(CountedTable[Skill]):
-    STANDARD_FILENAME: ClassVar[str] = 'magic.dat'
+    STANDARD_FILENAME: Final = 'magic.dat'
 
     def __init__(self, buffer: WriteableBuffer, offset: int = 0) -> None:
         super().__init__(Skill, buffer, offset)

@@ -1,4 +1,4 @@
-from typing import ClassVar, Sequence, TypeVar, Iterator, Union, overload
+from typing import Sequence, TypeVar, Iterator, Union, overload
 import ctypes as C
 from astruct import typed_struct
 from astruct.type_hints import *
@@ -18,7 +18,7 @@ E = TypeVar('E', bound=AnyCType)
 
 @typed_struct
 class CountedTableHeader(C.Structure):
-    _pack_: ClassVar[int] = 1
+    _pack_ = 1
 
     # TODO: unclear on the difference between these values. I assume one is
     # capacity and the other is the actual length, but in every example I

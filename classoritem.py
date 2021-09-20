@@ -1,4 +1,4 @@
-from typing import ClassVar
+from typing import Final
 import ctypes as C
 import enum
 from astruct import typed_struct
@@ -35,7 +35,7 @@ class SPTypeIndex(enum.IntEnum):
 
 @typed_struct
 class ClassOrItem(C.Structure):
-    _pack_: ClassVar[int] = 1
+    _pack_ = 1
 
     # The name of an instance of this class or item. For generic classes and
     # items, it's the same as class_name.
@@ -125,7 +125,7 @@ class ClassOrItem(C.Structure):
 
 
 class ClassOrItemTable(CountedTable[ClassOrItem]):
-    STANDARD_FILENAME: ClassVar[str] = 'char.dat'
+    STANDARD_FILENAME: Final = 'char.dat'
 
     def __init__(self, buffer: WriteableBuffer, offset: int = 0) -> None:
         super().__init__(ClassOrItem, buffer, offset)
