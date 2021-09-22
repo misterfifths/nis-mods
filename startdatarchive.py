@@ -11,6 +11,7 @@ from dungeoncategory import DungeonCategoryTable
 from classoritem import ClassOrItemTable
 from fusioncompat import FusionCompatibilityTable
 from title import TitleTable
+from randomevent import RandomEventTable
 
 E = TypeVar('E', bound=AnyCType)
 
@@ -123,3 +124,8 @@ class StartDatArchive:
     def titletab(self) -> TitleTable:
         file_entry = self.find_file(TitleTable.STANDARD_FILENAME)
         return TitleTable(self._buffer, file_entry.offset)
+
+    @ro_cached_property
+    def eventtab(self) -> RandomEventTable:
+        file_entry = self.find_file(RandomEventTable.STANDARD_FILENAME)
+        return RandomEventTable(self._buffer, file_entry.offset)
