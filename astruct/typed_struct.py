@@ -9,7 +9,6 @@ from ._carrayattr import CArrayAttr
 from ._cfieldattr import CFieldAttr
 
 
-
 _CSU = TypeVar('_CSU', bound=CStructureOrUnion)
 
 
