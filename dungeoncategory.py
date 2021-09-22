@@ -30,9 +30,9 @@ class DungeonCategory(C.Structure):
     # You likely want to use the members property instead of this, as it
     # decodes the integers for you.
     member_codes: CUInt16Array[MAX_MEMBER_COUNT]
-    _zero2: CUInt16  # always zero. Perhaps part of member_codes?
-    name: CStr[8]  # this is probably length 7
-    _zero3: CUInt8Array[3]
+    _zero2: CUInt8Array[2]  # always zero. Perhaps part of member_codes?
+    name: CStr[9]
+    _zero3: CUInt8Array[2]
 
     # The minimum level at which a Dungeon Monk can roll this category.
     monk_level_req: CUInt8
