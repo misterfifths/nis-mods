@@ -1,3 +1,5 @@
+# pyright: reportPrivateUsage=none
+
 from typing import Annotated, Any, Optional
 import typing
 from dataclasses import dataclass
@@ -5,8 +7,6 @@ from ._type_hint_utils import hint_is, first_annotated_md_of_type
 from .type_hints.metadata import Length
 from .type_hints.carray import CArray, _CIntArray, _CFloatArray
 from .type_hints.ctypes_aliases import AnyCType, is_ctype_subclass
-
-# pyright: reportPrivateUsage=none
 
 
 @dataclass

@@ -4,7 +4,7 @@ import os
 from astruct import typed_struct
 from astruct.type_hints import *
 from countedtable import CountedTable
-from utils import WriteableBuffer, ro_cached_property
+from utils import ro_cached_property
 
 from skills import SkillTable
 from dungeoncategory import DungeonCategoryTable

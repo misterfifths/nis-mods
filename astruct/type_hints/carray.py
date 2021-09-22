@@ -1,9 +1,9 @@
+# pyright: reportUnusedClass=none
+
 from typing import Any, Iterable, Iterator, Protocol, TypeVar, overload
 from typing import _GenericAlias  # type: ignore
 from abc import abstractmethod
 from .ctypes_aliases import IntCType, FloatCType
-
-# pyright: reportUnusedClass=none
 
 _T = TypeVar('_T')
 _IntCT_co = TypeVar('_IntCT_co', bound=IntCType, covariant=True)

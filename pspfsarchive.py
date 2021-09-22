@@ -3,7 +3,7 @@ import ctypes as C
 from astruct import typed_struct
 from astruct.type_hints import *
 from startdatarchive import StartDatArchive
-from utils import WriteableBuffer, ro_cached_property
+from utils import ro_cached_property
 
 # TODO: enable switching between these
 PSP_FILENAME_LEN = 24

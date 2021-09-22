@@ -2,7 +2,6 @@ from typing import Sequence, TypeVar, Iterator, Union, overload
 import ctypes as C
 from astruct import typed_struct
 from astruct.type_hints import *
-from utils import WriteableBuffer
 
 """
 TODO?

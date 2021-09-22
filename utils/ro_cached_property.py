@@ -1,18 +1,14 @@
-from typing import Any, Callable, Final, Generic, Optional, TypeVar, Union
-from mmap import mmap
-
-"""
-TODO:
-- Better WriteableBuffer type? Feels like a MutableSequence[int] should be
-fine, but there's some weirdness between the types struct.unpack_from and
-ctypes.Structure.from_buffer want.
-"""
-
-
-WriteableBuffer = Union[bytearray, memoryview, mmap]
+from typing import Any, Callable, Final, Generic, Optional, TypeVar
 
 _T = TypeVar('_T')
 _RT = TypeVar('_RT')
+
+"""
+TODO: not strictly sure why this was necessary. Stacked @property and @cache
+seemed to be hanging on to their values for too long. I got errors trying to
+close an mmap if there were ctypes.Structure into it via that approach. This
+seems to fix those and is simple enough, but still.
+"""
 
 
 class ro_cached_property(Generic[_T, _RT]):
