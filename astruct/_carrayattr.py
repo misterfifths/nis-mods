@@ -38,7 +38,10 @@ class CArrayAttr:
         return False
 
     @classmethod
-    def from_type_hint(cls, hint: Any, unannotated_hint: Any) -> Optional['CArrayAttr']:
+    def _from_type_hint(cls,
+                        attr_name: str,
+                        hint: Any,
+                        unannotated_hint: Any) -> Optional['CArrayAttr']:
         """Construct an instance from the given type hint if possible.
 
         Retrieves relevant metadata (e.g. Length) from the hint if it is

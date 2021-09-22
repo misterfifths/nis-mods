@@ -1,3 +1,5 @@
+# pyright: reportPrivateUsage=none
+
 from typing import ClassVar, Final, Generic, Any, TypeVar
 import typing
 from ._type_hint_utils import hint_is
@@ -12,7 +14,6 @@ _CSU = TypeVar('_CSU', bound=CStructureOrUnion)
 
 
 class _TypedStructBuilder(Generic[_CSU]):
-    CSTR_RAW_BYTES_PREFIX: Final = '_raw_'
     ATTR_NAME_BLACKLIST: Final = {'_anonymous_', '_pack_'}
 
     target_cls: type[_CSU]
@@ -45,11 +46,11 @@ class _TypedStructBuilder(Generic[_CSU]):
 
             unannotated_hint = self.unannotated_hints[attr_name]
 
-            if cfldattr := CFieldAttr.from_hint(hint, unannotated_hint):
+            if cfldattr := CFieldAttr._from_type_hint(attr_name, hint, unannotated_hint):
                 self._apply_cfield(attr_name, cfldattr)
-            elif cstrattr := CStrAttr.from_type_hint(hint, unannotated_hint):
+            elif cstrattr := CStrAttr._from_type_hint(attr_name, hint, unannotated_hint):
                 self._apply_cstr_field(attr_name, cstrattr)
-            elif carrayattr := CArrayAttr.from_type_hint(hint, unannotated_hint):
+            elif carrayattr := CArrayAttr._from_type_hint(attr_name, hint, unannotated_hint):
                 self._apply_array_field(attr_name, carrayattr)
 
         self.target_cls._fields_ = self.fields[:]
@@ -67,29 +68,11 @@ class _TypedStructBuilder(Generic[_CSU]):
         self.fields.append((name, array_type))
 
     def _apply_cstr_field(self, name: str, cstrattr: CStrAttr) -> None:
-        field_name = self.CSTR_RAW_BYTES_PREFIX + name
-        self.fields.append((field_name, cstrattr.ctype * cstrattr.max_length))
+        # The field is given a prefixed name:
+        self.fields.append((cstrattr.raw_field_name, cstrattr.ctype * cstrattr.max_length))
 
-        self._add_string_prop(name, field_name, cstrattr)
-
-    def _add_string_prop(self, prop_name: str, field_name: str, cstr: CStrAttr) -> None:
-        """Adds a property to transparently read and write a ctypes.c_char
-        array as a str.
-
-        Arguments:
-        name: The name of the property. The underlying ctypes array is assumed
-            to be a prefixed version of this string.
-        cstr: The CStrAttr instance defining the behavior of the string.
-        """
-        def getter(self: Any) -> str:
-            return cstr.bytes_to_str(getattr(self, field_name))
-
-        def setter(self: Any, value: str) -> None:
-            setattr(self, field_name, cstr.str_to_bytes(value))
-
-        # TODO: just give CStrAttr __get__ and __set__?
-
-        setattr(self.target_cls, prop_name, property(getter, setter))
+        # And the actual attr is set to cstrattr, which is a descriptor:
+        setattr(self.target_cls, name, cstrattr)
 
 
 def typed_struct(cls: type[_CSU]) -> type[_CSU]:

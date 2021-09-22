@@ -1,8 +1,9 @@
-from typing import Any, Optional, Union
+from typing import Any, ClassVar, Optional, Union
 import typing
 import ctypes as C
 from dataclasses import dataclass
 from ._type_hint_utils import hint_is, first_annotated_md_of_type
+from .type_hints.ctypes_aliases import AnyCType
 from .type_hints.metadata import Encoding, NotNullTerminated
 from .type_hints.cstr import CStr, CWStr
 
@@ -11,6 +12,9 @@ from .type_hints.cstr import CStr, CWStr
 class CStrAttr:
     """Represents the configuration of a CStr or CWStr attribute on a
     typed_struct."""
+    RAW_FIELD_PREFIX: ClassVar[str] = '_raw_'  # TODO: @dataclass + Final = sad
+
+    raw_field_name: str
     max_length: int
     ctype: Union[type[C.c_char], type[C.c_wchar]]
     encoding: str = 'shift-jis'
@@ -18,7 +22,10 @@ class CStrAttr:
     null_terminated: bool = True
 
     @classmethod
-    def from_type_hint(cls, hint: Any, unannotated_hint: Any) -> Optional['CStrAttr']:
+    def _from_type_hint(cls,
+                        attr_name: str,
+                        hint: Any,
+                        unannotated_hint: Any) -> Optional['CStrAttr']:
         """Constructs an instance from the given type hint if possible.
 
         Retrieves relevant metadata (e.g. Encoding) from the hint if it is
@@ -35,7 +42,7 @@ class CStrAttr:
             return None
 
         max_length = typing.get_args(unannotated_hint)[0]
-        res = cls(max_length, ctype)
+        res = cls(cls.RAW_FIELD_PREFIX + attr_name, max_length, ctype)
 
         if encoding_md := first_annotated_md_of_type(hint, Encoding):
             res.encoding = encoding_md.encoding
@@ -74,3 +81,11 @@ class CStrAttr:
             raise IndexError(f'String is {len(bs)} bytes, but the maximum is {self.max_length}')
 
         return bs
+
+    def __get__(self, instance: AnyCType, owner: Any = None) -> str:
+        raw_val: bytes = getattr(instance, self.raw_field_name)
+        return self.bytes_to_str(raw_val)
+
+    def __set__(self, instance: AnyCType, value: str) -> None:
+        bs = self.str_to_bytes(value)
+        setattr(instance, self.raw_field_name, bs)
