@@ -1,16 +1,14 @@
-from typing import ClassVar, Final, Generic, Any, TypeVar, Union
+from typing import ClassVar, Final, Generic, Any, TypeVar
 import typing
-import ctypes as C
 from ._type_hint_utils import hint_is
-from .type_hints.ctypes_aliases import AnyCType
+from .type_hints.extras import CStructureOrUnion, CStructureField
 from ._cstrattr import CStrAttr
 from ._carrayattr import CArrayAttr
 from ._cfieldattr import CFieldAttr
 
-_CStructureField = Union[tuple[str, type[AnyCType]], tuple[str, type[AnyCType], int]]
-_CStructOrUnion = Union[C.Structure, C.Union]
 
-_CSU = TypeVar('_CSU', bound=_CStructOrUnion)
+
+_CSU = TypeVar('_CSU', bound=CStructureOrUnion)
 
 
 class _TypedStructBuilder(Generic[_CSU]):
@@ -21,7 +19,7 @@ class _TypedStructBuilder(Generic[_CSU]):
     hints: dict[str, Any]
     unannotated_hints: dict[str, Any]
 
-    fields: list[_CStructureField]
+    fields: list[CStructureField]
 
     def __init__(self, target_cls: type[_CSU]) -> None:
         self.target_cls = target_cls
