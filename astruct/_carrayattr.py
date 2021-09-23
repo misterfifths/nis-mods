@@ -86,7 +86,7 @@ class CArrayAttr:
 
         # The ctype is part of the base type of the hint's origin. We can't
         # consider mro though, because those are stripped/resolved down to
-        # actual classes (e.g. list[int], which is actually a _GenericAlias
+        # actual classes (e.g. list[int], which is actually a GenericAlias
         # instance, shows up as the actual type list in mro). Luckily,
         # __orig_bases__ has the verbatim base types as provided in the
         # definition.

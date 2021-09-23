@@ -1,5 +1,5 @@
 from typing import Any
-from typing import _GenericAlias  # type: ignore
+from types import GenericAlias
 
 """
 We want to be able to type-hint fixed-length C strings on classes like this:
@@ -50,17 +50,17 @@ class CStr(str):
     This class uses ctypes.c_char as the underlying representation. If you
     need ctypes.c_wchar, use CWStr.
     """
-    def __class_getitem__(cls, params: Any) -> _GenericAlias:  # type: ignore
+    def __class_getitem__(cls, params: Any) -> GenericAlias:
         if not isinstance(params, int):
             raise TypeError('Expected a single integer as a type parameter')
 
-        return _GenericAlias(cls, params)  # type: ignore
+        return GenericAlias(cls, params)
 
 
 class CWStr(str):
     """A version of CStr represented by ctypes.c_wchar instead of c_char."""
-    def __class_getitem__(cls, params: Any) -> _GenericAlias:  # type: ignore
+    def __class_getitem__(cls, params: Any) -> GenericAlias:
         if not isinstance(params, int):
             raise TypeError('Expected a single integer as a type parameter')
 
-        return _GenericAlias(cls, params)  # type: ignore
+        return GenericAlias(cls, params)

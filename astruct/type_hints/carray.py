@@ -1,7 +1,7 @@
 # pyright: reportUnusedClass=none
 
 from typing import Any, Iterable, Iterator, Protocol, TypeVar, overload
-from typing import _GenericAlias  # type: ignore
+from types import GenericAlias
 from abc import abstractmethod
 from .ctypes_aliases import IntCType, FloatCType
 
@@ -50,11 +50,11 @@ class CArray(Iterable[_T], Protocol[_T]):
 
 
 class _CIntArray(CArray[int], Protocol[_IntCT_co]):
-    def __class_getitem__(cls, params: Any) -> _GenericAlias:  # type: ignore
+    def __class_getitem__(cls, params: Any) -> GenericAlias:
         # Not much use in typechecking; these are our internal classes
-        return _GenericAlias(cls, params)  # type: ignore
+        return GenericAlias(cls, params)
 
 
 class _CFloatArray(CArray[float], Protocol[_FloatCT_co]):
-    def __class_getitem__(cls, params: Any) -> _GenericAlias:  # type: ignore
-        return _GenericAlias(cls, params)  # type: ignore
+    def __class_getitem__(cls, params: Any) -> GenericAlias:
+        return GenericAlias(cls, params)

@@ -169,11 +169,11 @@ def format_array_type(base_typename: str, ctypename: str) -> str:
     name = camel_case_array_ctypename(ctypename)
     res = f'''
         class {name}({base_typename}[{ctypename}], Protocol):
-            def __class_getitem__(cls, params: Any) -> _GenericAlias:  # type: ignore
+            def __class_getitem__(cls, params: Any) -> GenericAlias:
                 if not isinstance(params, int):
                     raise TypeError('Expected a single integer as a type parameter')
 
-                return _GenericAlias(cls, params)  # type: ignore
+                return GenericAlias(cls, params)
     '''
 
     return fixup_multiline_str(res)
@@ -265,7 +265,7 @@ def generate_helpers_file() -> str:
         # pyright: reportPrivateUsage=none
 
         from typing import Annotated, Any, Protocol
-        from typing import _GenericAlias  # type: ignore
+        from types import GenericAlias
         import ctypes as {CTYPES_MODULE_NAME}
         from .carray import _CIntArray, _CFloatArray
         from .metadata import CField
