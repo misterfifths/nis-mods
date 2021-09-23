@@ -68,7 +68,7 @@ class _TypedStructBuilder(Generic[_CSU]):
 
     def _apply_cstr_field(self, name: str, cstrattr: CStrAttr) -> None:
         # The field is given a prefixed name:
-        self.fields.append((cstrattr.raw_field_name, cstrattr.ctype * cstrattr.max_length))
+        self.fields.append((cstrattr.raw_field_name, cstrattr.array_ctype))
 
         # And the actual attr is set to cstrattr, which is a descriptor:
         setattr(self.target_cls, name, cstrattr)

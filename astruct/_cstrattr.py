@@ -1,9 +1,9 @@
-from typing import Any, ClassVar, Optional, Union
+from typing import Any, ClassVar, Optional
 import typing
 import ctypes as C
 from dataclasses import dataclass
 from ._type_hint_utils import hint_is_specialized, first_annotated_md_of_type
-from .type_hints.ctypes_aliases import AnyCType
+from .type_hints.ctypes_aliases import AnyCType, CharCType
 from .type_hints.metadata import Encoding, NotNullTerminated
 from .type_hints.cstr import CStr, CWStr
 
@@ -16,7 +16,8 @@ class CStrAttr:
 
     raw_field_name: str
     max_length: int
-    ctype: Union[type[C.c_char], type[C.c_wchar]]
+    element_ctype: type[CharCType]
+    array_ctype: type[C.Array[CharCType]]
     encoding: str = 'shift-jis'
     errors: str = 'strict'
     null_terminated: bool = True
@@ -34,6 +35,7 @@ class CStrAttr:
         If the hint is not for CStr, CWStr, or an Annotated version thereof,
         returns None.
         """
+        ctype: type[CharCType]
         if hint_is_specialized(unannotated_hint, CStr):
             ctype = C.c_char
         elif hint_is_specialized(unannotated_hint, CWStr):
@@ -42,7 +44,7 @@ class CStrAttr:
             return None
 
         max_length = typing.get_args(unannotated_hint)[0]
-        res = cls(cls.RAW_FIELD_PREFIX + attr_name, max_length, ctype)
+        res = cls(cls.RAW_FIELD_PREFIX + attr_name, max_length, ctype, ctype * max_length)
 
         if encoding_md := first_annotated_md_of_type(hint, Encoding):
             res.encoding = encoding_md.encoding
