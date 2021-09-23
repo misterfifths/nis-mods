@@ -2,7 +2,7 @@ from typing import Any, ClassVar, Optional, Union
 import typing
 import ctypes as C
 from dataclasses import dataclass
-from ._type_hint_utils import hint_is, first_annotated_md_of_type
+from ._type_hint_utils import hint_is_specialized, first_annotated_md_of_type
 from .type_hints.ctypes_aliases import AnyCType
 from .type_hints.metadata import Encoding, NotNullTerminated
 from .type_hints.cstr import CStr, CWStr
@@ -34,9 +34,9 @@ class CStrAttr:
         If the hint is not for CStr, CWStr, or an Annotated version thereof,
         returns None.
         """
-        if hint_is(unannotated_hint, CStr):
+        if hint_is_specialized(unannotated_hint, CStr):
             ctype = C.c_char
-        elif hint_is(unannotated_hint, CWStr):
+        elif hint_is_specialized(unannotated_hint, CWStr):
             ctype = C.c_wchar
         else:
             return None

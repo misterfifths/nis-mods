@@ -3,7 +3,7 @@
 from typing import Annotated, Any, Optional
 import typing
 from dataclasses import dataclass
-from ._type_hint_utils import hint_is, first_annotated_md_of_type
+from ._type_hint_utils import hint_is_specialized, first_annotated_md_of_type
 from .type_hints.metadata import Length
 from .type_hints.carray import CArray, _CIntArray, _CFloatArray
 from .type_hints.ctypes_aliases import AnyCType, is_ctype_subclass
@@ -54,7 +54,7 @@ class CArrayAttr:
         if not cls._is_array_hint(hint, unannotated_hint):
             return None
 
-        if hint_is(hint, Annotated):  # type: ignore
+        if hint_is_specialized(hint, Annotated):  # type: ignore
             return cls._from_annotated(hint, unannotated_hint)
 
         return cls._from_helper_type(hint, unannotated_hint)

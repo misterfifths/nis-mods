@@ -2,7 +2,7 @@
 
 from typing import ClassVar, Final, Generic, Any, TypeVar
 import typing
-from ._type_hint_utils import hint_is
+from ._type_hint_utils import hint_is_specialized
 from .type_hints.extras import CStructureOrUnion, CStructureField
 from ._cstrattr import CStrAttr
 from ._carrayattr import CArrayAttr
@@ -37,10 +37,10 @@ class _TypedStructBuilder(Generic[_CSU]):
             if attr_name in self.ATTR_NAME_BLACKLIST:
                 continue
 
-            if hint_is(hint, ClassVar):  # type: ignore[arg-type]
+            if hint_is_specialized(hint, ClassVar):  # type: ignore[arg-type]
                 continue
 
-            if hint_is(hint, Final):
+            if hint is Final or hint_is_specialized(hint, Final):
                 continue
 
             unannotated_hint = self.unannotated_hints[attr_name]
