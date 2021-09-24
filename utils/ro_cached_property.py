@@ -31,7 +31,7 @@ class ro_cached_property(Generic[_T, _RT]):
     attr_name: Optional[str]
 
     def __init__(self, func: Callable[[_T], _RT]) -> None:
-        self.func = func
+        self.func = func  # type: ignore[assignment]  # mypy bug #708
         self.attr_name = None
         self.__doc__ = func.__doc__
 
@@ -51,7 +51,7 @@ class ro_cached_property(Generic[_T, _RT]):
         try:
             return getattr(instance, cache_attr_name)
         except AttributeError:
-            val = self.func(instance)
+            val = self.func(instance)  # type: ignore[call-arg]  # mypy #708
             setattr(instance, cache_attr_name, val)
             return val
 
