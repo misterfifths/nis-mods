@@ -1,7 +1,5 @@
-# pyright: reportMissingTypeStubs=none
-
 from typing import Final
-from wcwidth import wcswidth, wcwidth
+from wcwidth import wcswidth, wcwidth  # type: ignore[import]
 
 
 COMBINER_ISOLATION_CHAR: Final = '◌'
