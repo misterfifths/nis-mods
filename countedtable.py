@@ -6,8 +6,6 @@ from astruct.type_hints import *
 """
 TODO?
 - A MutableSequence implementation for CountedTable.
-- I'm pretty sure CountedTable.__contains__ doesn't really work, because ctypes
-Structures don't handle equality in a normal way. Probably not a big deal.
 - Is it a problem that CountedTable itself is not a Structure? The current
 approach prevents us from embedding it in other Structures, or in an array.
 """
@@ -49,9 +47,11 @@ class CountedTable(Sequence[E]):
         self._header = CountedTableHeader.from_buffer(buffer, offset)  # type: ignore[arg-type]
         self._header.validate()
 
-        EntriesArray = element_cls * self._header.entry_count
+        EntriesArray: type[C.Array[E]]
+        EntriesArray = element_cls * self._header.entry_count  # type: ignore[operator, assignment]
         entries_offset = offset + C.sizeof(CountedTableHeader)
-        self._entries = EntriesArray.from_buffer(buffer, entries_offset)  # type: ignore[arg-type]
+        self._entries = EntriesArray.from_buffer(buffer,  # type: ignore[arg-type]
+                                                 entries_offset)
 
     def __iter__(self) -> Iterator[E]:
         return iter(self._entries)
@@ -60,7 +60,12 @@ class CountedTable(Sequence[E]):
         return len(self._entries)
 
     def __contains__(self, x: object) -> bool:
-        return x in self._entries
+        # Despite what the stubs say, ctypes.Arrays do support this method. It
+        # just doesn't do what you might expect. It works fine for arrays of
+        # simple ctypes, but for arrays of Structures, which have a weird/
+        # nonexistant notion of equality, it pretty much always returns False.
+        # TODO: improve on that somehow?
+        return x in self._entries  # type: ignore[operator]
 
     @overload
     def __getitem__(self, idx: int) -> E: ...
