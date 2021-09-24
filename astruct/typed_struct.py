@@ -52,7 +52,7 @@ class _TypedStructBuilder(Generic[_CSU]):
             elif carrayattr := CArrayAttr._from_type_hint(attr_name, hint, unannotated_hint):
                 self._apply_array_field(attr_name, carrayattr)
 
-        self.target_cls._fields_ = self.fields[:]
+        self.target_cls._fields_ = self.fields[:]  # type: ignore[attr-defined]
         return self.target_cls
 
     def _apply_cfield(self, name: str, cfldattr: CFieldAttr) -> None:
