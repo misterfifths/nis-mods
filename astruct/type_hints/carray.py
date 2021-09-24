@@ -1,24 +1,45 @@
 # pyright: reportUnusedClass=none
 
-from typing import Any, Iterable, Iterator, Protocol, TypeVar, overload
-from types import GenericAlias
+from typing import ClassVar, Iterable, Iterator, Protocol, TypeVar, overload
 from abc import abstractmethod
-from .ctypes_aliases import IntCType, FloatCType
+from .ctypes_aliases import AnyCType
 
 _T = TypeVar('_T')
-_IntCT_co = TypeVar('_IntCT_co', bound=IntCType, covariant=True)
-_FloatCT_co = TypeVar('_FloatCT_co', bound=FloatCType, covariant=True)
+_CT = TypeVar('_CT', bound=AnyCType)
 
 
 # Ideally this would start with Sequence and add things from there, but after
 # Collection, for some reason the sequence hierarchy classes cease being
 # Protocols. And also some of them (Sized) come with a metaclass.
-class CArray(Iterable[_T], Protocol[_T]):
+class CArray(Iterable[_T], Protocol[_T, _CT]):
     """A protocol representing the behavior of ctypes.Array.
 
-    Effectively a fixed-length array whose elements can be changed. Some
-    methods are missing, including index.
+    A ctypes.Array is tricky because it relates two types: the underlying
+    ctype representing the raw data, and the outward-facing Python type for it.
+    Sometimes, as in the case of Structure and Union subclasses, these types
+    are the same. But for the basic types, they always differ (e.g. an array of
+    c_uint8s is actually experienced as a field of ints).
+
+    So, CArray is generic on two types: first the Python type, then the ctype.
+    The underlying ctype is accessible via the _type_ class variable.
+
+    The interface is effectively a fixed-length array whose elements can be
+    changed. Some methods are missing, including index.
+
+    This type can be used on typed_structs by annotating a class attribute
+    like so:
+        grades: Annotated[CArray[int, c_uint8], Length(20)]
+
+    The Length metadata is mandatory in this use case. For all simple ctypes,
+    there are shorter aliases in the type_hints module. This is equivalent to
+    the above, for instance:
+        grades: CUInt8Array[20]
+
+    The long-hand form is still useful for arrays of custom Structure or Union
+    subclasses.
     """
+    _type_: ClassVar[type[_CT]]
+
     @overload
     @abstractmethod
     def __getitem__(self, i: int) -> _T: ...
@@ -47,14 +68,3 @@ class CArray(Iterable[_T], Protocol[_T]):
 
     @abstractmethod
     def __reversed__(self) -> Iterator[_T]: ...
-
-
-class _CIntArray(CArray[int], Protocol[_IntCT_co]):
-    def __class_getitem__(cls, params: Any) -> GenericAlias:
-        # Not much use in typechecking; these are our internal classes
-        return GenericAlias(cls, params)
-
-
-class _CFloatArray(CArray[float], Protocol[_FloatCT_co]):
-    def __class_getitem__(cls, params: Any) -> GenericAlias:
-        return GenericAlias(cls, params)
