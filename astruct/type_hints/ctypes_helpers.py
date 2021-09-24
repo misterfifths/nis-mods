@@ -48,160 +48,160 @@ CLongDouble = Annotated[float, CField(C.c_longdouble)]
 # int arrays
 class CByteArray(_CIntArray[C.c_byte], Protocol):
     def __class_getitem__(cls, params: Any) -> GenericAlias:
-        if not isinstance(params, int):
-            raise TypeError('Expected a single integer as a type parameter')
+        if not isinstance(params, int) or params <= 0:
+            raise TypeError('CByteArray requires a single, positive integer length argument')
 
         return GenericAlias(cls, params)
 
 
 class CIntArray(_CIntArray[C.c_int], Protocol):
     def __class_getitem__(cls, params: Any) -> GenericAlias:
-        if not isinstance(params, int):
-            raise TypeError('Expected a single integer as a type parameter')
+        if not isinstance(params, int) or params <= 0:
+            raise TypeError('CIntArray requires a single, positive integer length argument')
 
         return GenericAlias(cls, params)
 
 
 class CInt16Array(_CIntArray[C.c_int16], Protocol):
     def __class_getitem__(cls, params: Any) -> GenericAlias:
-        if not isinstance(params, int):
-            raise TypeError('Expected a single integer as a type parameter')
+        if not isinstance(params, int) or params <= 0:
+            raise TypeError('CInt16Array requires a single, positive integer length argument')
 
         return GenericAlias(cls, params)
 
 
 class CInt32Array(_CIntArray[C.c_int32], Protocol):
     def __class_getitem__(cls, params: Any) -> GenericAlias:
-        if not isinstance(params, int):
-            raise TypeError('Expected a single integer as a type parameter')
+        if not isinstance(params, int) or params <= 0:
+            raise TypeError('CInt32Array requires a single, positive integer length argument')
 
         return GenericAlias(cls, params)
 
 
 class CInt64Array(_CIntArray[C.c_int64], Protocol):
     def __class_getitem__(cls, params: Any) -> GenericAlias:
-        if not isinstance(params, int):
-            raise TypeError('Expected a single integer as a type parameter')
+        if not isinstance(params, int) or params <= 0:
+            raise TypeError('CInt64Array requires a single, positive integer length argument')
 
         return GenericAlias(cls, params)
 
 
 class CInt8Array(_CIntArray[C.c_int8], Protocol):
     def __class_getitem__(cls, params: Any) -> GenericAlias:
-        if not isinstance(params, int):
-            raise TypeError('Expected a single integer as a type parameter')
+        if not isinstance(params, int) or params <= 0:
+            raise TypeError('CInt8Array requires a single, positive integer length argument')
 
         return GenericAlias(cls, params)
 
 
 class CLongArray(_CIntArray[C.c_long], Protocol):
     def __class_getitem__(cls, params: Any) -> GenericAlias:
-        if not isinstance(params, int):
-            raise TypeError('Expected a single integer as a type parameter')
+        if not isinstance(params, int) or params <= 0:
+            raise TypeError('CLongArray requires a single, positive integer length argument')
 
         return GenericAlias(cls, params)
 
 
 class CLongLongArray(_CIntArray[C.c_longlong], Protocol):
     def __class_getitem__(cls, params: Any) -> GenericAlias:
-        if not isinstance(params, int):
-            raise TypeError('Expected a single integer as a type parameter')
+        if not isinstance(params, int) or params <= 0:
+            raise TypeError('CLongLongArray requires a single, positive integer length argument')
 
         return GenericAlias(cls, params)
 
 
 class CShortArray(_CIntArray[C.c_short], Protocol):
     def __class_getitem__(cls, params: Any) -> GenericAlias:
-        if not isinstance(params, int):
-            raise TypeError('Expected a single integer as a type parameter')
+        if not isinstance(params, int) or params <= 0:
+            raise TypeError('CShortArray requires a single, positive integer length argument')
 
         return GenericAlias(cls, params)
 
 
 class CSizeTArray(_CIntArray[C.c_size_t], Protocol):
     def __class_getitem__(cls, params: Any) -> GenericAlias:
-        if not isinstance(params, int):
-            raise TypeError('Expected a single integer as a type parameter')
+        if not isinstance(params, int) or params <= 0:
+            raise TypeError('CSizeTArray requires a single, positive integer length argument')
 
         return GenericAlias(cls, params)
 
 
 class CSSizeTArray(_CIntArray[C.c_ssize_t], Protocol):
     def __class_getitem__(cls, params: Any) -> GenericAlias:
-        if not isinstance(params, int):
-            raise TypeError('Expected a single integer as a type parameter')
+        if not isinstance(params, int) or params <= 0:
+            raise TypeError('CSSizeTArray requires a single, positive integer length argument')
 
         return GenericAlias(cls, params)
 
 
 class CUByteArray(_CIntArray[C.c_ubyte], Protocol):
     def __class_getitem__(cls, params: Any) -> GenericAlias:
-        if not isinstance(params, int):
-            raise TypeError('Expected a single integer as a type parameter')
+        if not isinstance(params, int) or params <= 0:
+            raise TypeError('CUByteArray requires a single, positive integer length argument')
 
         return GenericAlias(cls, params)
 
 
 class CUIntArray(_CIntArray[C.c_uint], Protocol):
     def __class_getitem__(cls, params: Any) -> GenericAlias:
-        if not isinstance(params, int):
-            raise TypeError('Expected a single integer as a type parameter')
+        if not isinstance(params, int) or params <= 0:
+            raise TypeError('CUIntArray requires a single, positive integer length argument')
 
         return GenericAlias(cls, params)
 
 
 class CUInt16Array(_CIntArray[C.c_uint16], Protocol):
     def __class_getitem__(cls, params: Any) -> GenericAlias:
-        if not isinstance(params, int):
-            raise TypeError('Expected a single integer as a type parameter')
+        if not isinstance(params, int) or params <= 0:
+            raise TypeError('CUInt16Array requires a single, positive integer length argument')
 
         return GenericAlias(cls, params)
 
 
 class CUInt32Array(_CIntArray[C.c_uint32], Protocol):
     def __class_getitem__(cls, params: Any) -> GenericAlias:
-        if not isinstance(params, int):
-            raise TypeError('Expected a single integer as a type parameter')
+        if not isinstance(params, int) or params <= 0:
+            raise TypeError('CUInt32Array requires a single, positive integer length argument')
 
         return GenericAlias(cls, params)
 
 
 class CUInt64Array(_CIntArray[C.c_uint64], Protocol):
     def __class_getitem__(cls, params: Any) -> GenericAlias:
-        if not isinstance(params, int):
-            raise TypeError('Expected a single integer as a type parameter')
+        if not isinstance(params, int) or params <= 0:
+            raise TypeError('CUInt64Array requires a single, positive integer length argument')
 
         return GenericAlias(cls, params)
 
 
 class CUInt8Array(_CIntArray[C.c_uint8], Protocol):
     def __class_getitem__(cls, params: Any) -> GenericAlias:
-        if not isinstance(params, int):
-            raise TypeError('Expected a single integer as a type parameter')
+        if not isinstance(params, int) or params <= 0:
+            raise TypeError('CUInt8Array requires a single, positive integer length argument')
 
         return GenericAlias(cls, params)
 
 
 class CULongArray(_CIntArray[C.c_ulong], Protocol):
     def __class_getitem__(cls, params: Any) -> GenericAlias:
-        if not isinstance(params, int):
-            raise TypeError('Expected a single integer as a type parameter')
+        if not isinstance(params, int) or params <= 0:
+            raise TypeError('CULongArray requires a single, positive integer length argument')
 
         return GenericAlias(cls, params)
 
 
 class CULongLongArray(_CIntArray[C.c_ulonglong], Protocol):
     def __class_getitem__(cls, params: Any) -> GenericAlias:
-        if not isinstance(params, int):
-            raise TypeError('Expected a single integer as a type parameter')
+        if not isinstance(params, int) or params <= 0:
+            raise TypeError('CULongLongArray requires a single, positive integer length argument')
 
         return GenericAlias(cls, params)
 
 
 class CUShortArray(_CIntArray[C.c_ushort], Protocol):
     def __class_getitem__(cls, params: Any) -> GenericAlias:
-        if not isinstance(params, int):
-            raise TypeError('Expected a single integer as a type parameter')
+        if not isinstance(params, int) or params <= 0:
+            raise TypeError('CUShortArray requires a single, positive integer length argument')
 
         return GenericAlias(cls, params)
 
@@ -209,23 +209,23 @@ class CUShortArray(_CIntArray[C.c_ushort], Protocol):
 # float arrays
 class CDoubleArray(_CFloatArray[C.c_double], Protocol):
     def __class_getitem__(cls, params: Any) -> GenericAlias:
-        if not isinstance(params, int):
-            raise TypeError('Expected a single integer as a type parameter')
+        if not isinstance(params, int) or params <= 0:
+            raise TypeError('CDoubleArray requires a single, positive integer length argument')
 
         return GenericAlias(cls, params)
 
 
 class CFloatArray(_CFloatArray[C.c_float], Protocol):
     def __class_getitem__(cls, params: Any) -> GenericAlias:
-        if not isinstance(params, int):
-            raise TypeError('Expected a single integer as a type parameter')
+        if not isinstance(params, int) or params <= 0:
+            raise TypeError('CFloatArray requires a single, positive integer length argument')
 
         return GenericAlias(cls, params)
 
 
 class CLongDoubleArray(_CFloatArray[C.c_longdouble], Protocol):
     def __class_getitem__(cls, params: Any) -> GenericAlias:
-        if not isinstance(params, int):
-            raise TypeError('Expected a single integer as a type parameter')
+        if not isinstance(params, int) or params <= 0:
+            raise TypeError('CLongDoubleArray requires a single, positive integer length argument')
 
         return GenericAlias(cls, params)

@@ -2,7 +2,7 @@
 
 # pyright: reportPrivateUsage=none
 
-from typing import Iterable
+from typing import Iterable, Optional
 import ctypes as C
 import textwrap
 import inspect
@@ -37,9 +37,9 @@ def pytype_for_typecode(typecode: str) -> type:
         'g': float,  # c_longdouble
 
         # Pointers. Not differentiating these at the moment
-        'P': C.pointer,  # type: ignore - struct module's void *
-        'O': C.pointer,  # type: ignore - py_object
-        'zZ': C.pointer,  # type: ignore - c_char_p and c_wchar_p
+        'P': C.pointer,  # type: ignore  # struct module's void *
+        'O': C.pointer,  # type: ignore  # py_object
+        'zZ': C.pointer,  # type: ignore  # c_char_p and c_wchar_p
 
         # Strings (which actually live as bytes, but this is just for
         # categorization purposes).
@@ -118,6 +118,10 @@ def wrap_code(s: str, width: int = 100, indent: int = 0) -> str:
     return '\n'.join(lines)
 
 
+def wrap_list_values(values: Iterable[str], indent: int = 0) -> str:
+    return wrap_code(', '.join(values), indent=indent)
+
+
 # like capitalize, but only changes the first letter
 def upcase_first(s: str) -> str:
     if len(s) == 0:
@@ -170,10 +174,36 @@ def format_array_type(base_typename: str, ctypename: str) -> str:
     res = f'''
         class {name}({base_typename}[{ctypename}], Protocol):
             def __class_getitem__(cls, params: Any) -> GenericAlias:
-                if not isinstance(params, int):
-                    raise TypeError('Expected a single integer as a type parameter')
+                if not isinstance(params, int) or params <= 0:
+                    raise TypeError('{name} requires a single, positive integer length argument')
 
                 return GenericAlias(cls, params)
+    '''
+
+    return fixup_multiline_str(res)
+
+
+def format_type_set(set_name: str,
+                    typenames: Iterable[str],
+                    type_ignore_first_line: bool = False,
+                    extra_start_lines: Optional[Iterable[str]] = None) -> str:
+    indent = 12  # for set elements in the multiline string below
+    first_line_comment = '  # type: ignore' if type_ignore_first_line else ''
+
+    start_lines_str = ''
+    if extra_start_lines:
+        for i, line in enumerate(extra_start_lines):
+            if i > 0:
+                start_lines_str += ' ' * indent
+            start_lines_str += line + '\n'
+
+        # make the next line line up correctly
+        start_lines_str += ' ' * indent
+
+    res = f'''
+        {set_name}: Final[frozenset[type]] = frozenset(({first_line_comment}
+            {start_lines_str}{wrap_list_values(typenames, indent=indent)}
+        ))
     '''
 
     return fixup_multiline_str(res)
@@ -208,27 +238,46 @@ def generate_aliases_file() -> str:
     fprint(f"AnyCType = Union[SimpleCType, {CTYPES_MODULE_NAME}.Structure, "
            f"{CTYPES_MODULE_NAME}.Union, {CTYPES_MODULE_NAME}.Array[Any]]")
 
+    fprint()
     # Need to remove py_object here, because we turned it into a string
     # earlier. Also it needs special casing in ALL_CTYPES.
     simple_type_names_without_pyobj = filter(lambda n: 'py_object' not in n, simple_type_names)
-    simple_types_wrapped = ', '.join(simple_type_names_without_pyobj)
-    simple_types_wrapped = wrap_code(simple_types_wrapped, indent=12)
-
+    extra_all_ctypes_lines = [f'{CTYPES_MODULE_NAME}.Structure,',
+                              f'{CTYPES_MODULE_NAME}.Union,  # type: ignore',
+                              f'{CTYPES_MODULE_NAME}.Array,  # type: ignore',
+                              f'{CTYPES_MODULE_NAME}.py_object,  # type: ignore']
     fprint()
-    fprint(fixup_multiline_str(f'''
-        ALL_CTYPES: Final[frozenset[type]] = frozenset((  # type: ignore
-            {CTYPES_MODULE_NAME}.Structure,
-            {CTYPES_MODULE_NAME}.Union,  # type: ignore
-            {CTYPES_MODULE_NAME}.Array,  # type: ignore
-            {CTYPES_MODULE_NAME}.py_object,  # type: ignore
-            {simple_types_wrapped}
-        ))
-    '''))
+    fprint(format_type_set('ALL_CTYPES',
+                           simple_type_names_without_pyobj,
+                           type_ignore_first_line=True,
+                           extra_start_lines=extra_all_ctypes_lines))
+
+    fprint(format_type_set('INT_CTYPES', int_type_names))
+    fprint(format_type_set('FLOAT_CTYPES', float_type_names))
+    fprint(format_type_set('CHAR_CTYPES', char_type_names))
 
     fprint()
     fprint(fixup_multiline_str(f'''
         def is_builtin_ctype(t: type) -> bool:
             return t in ALL_CTYPES
+    '''))
+
+    fprint()
+    fprint(fixup_multiline_str(f'''
+        def is_int_ctype(t: type) -> bool:
+            return t in INT_CTYPES
+    '''))
+
+    fprint()
+    fprint(fixup_multiline_str(f'''
+        def is_float_ctype(t: type) -> bool:
+            return t in FLOAT_CTYPES
+    '''))
+
+    fprint()
+    fprint(fixup_multiline_str(f'''
+        def is_char_ctype(t: type) -> bool:
+            return t in CHAR_CTYPES
     '''))
 
     fprint()

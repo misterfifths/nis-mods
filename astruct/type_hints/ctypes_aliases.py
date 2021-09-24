@@ -21,6 +21,7 @@ PointerCType = Union[C.c_char_p, C.c_void_p, C.c_wchar_p, 'C.py_object[Any]']
 
 AnyCType = Union[SimpleCType, C.Structure, C.Union, C.Array[Any]]
 
+
 ALL_CTYPES: Final[frozenset[type]] = frozenset((  # type: ignore
     C.Structure,
     C.Union,  # type: ignore
@@ -32,9 +33,35 @@ ALL_CTYPES: Final[frozenset[type]] = frozenset((  # type: ignore
     C.c_ulong, C.c_ulonglong, C.c_ushort, C.c_void_p, C.c_wchar, C.c_wchar_p
 ))
 
+INT_CTYPES: Final[frozenset[type]] = frozenset((
+    C.c_byte, C.c_int, C.c_int16, C.c_int32, C.c_int64, C.c_int8, C.c_long, C.c_longlong, C.c_short,
+    C.c_size_t, C.c_ssize_t, C.c_ubyte, C.c_uint, C.c_uint16, C.c_uint32, C.c_uint64,
+    C.c_uint8, C.c_ulong, C.c_ulonglong, C.c_ushort
+))
+
+FLOAT_CTYPES: Final[frozenset[type]] = frozenset((
+    C.c_double, C.c_float, C.c_longdouble
+))
+
+CHAR_CTYPES: Final[frozenset[type]] = frozenset((
+    C.c_char, C.c_wchar
+))
+
 
 def is_builtin_ctype(t: type) -> bool:
     return t in ALL_CTYPES
+
+
+def is_int_ctype(t: type) -> bool:
+    return t in INT_CTYPES
+
+
+def is_float_ctype(t: type) -> bool:
+    return t in FLOAT_CTYPES
+
+
+def is_char_ctype(t: type) -> bool:
+    return t in CHAR_CTYPES
 
 
 def is_ctype_subclass(t: type) -> bool:
