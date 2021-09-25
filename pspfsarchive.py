@@ -6,8 +6,8 @@ from startdatarchive import StartDatArchive
 from utils import ro_cached_property
 
 # TODO: enable switching between these
-PSP_FILENAME_LEN = 24
-PC_SWITCH_FILENAME_LEN = 44
+PSP_FILENAME_LEN = 20
+PC_SWITCH_FILENAME_LEN = 40
 
 # Thanks to xdanieldzd's Scarlet project for helping me work out details on the
 # PSPFS container format. See in particular:
@@ -33,6 +33,7 @@ class PSPFSFileEntry(C.Structure):
     _pack_ = 1
 
     filename: CStr[PC_SWITCH_FILENAME_LEN]
+    _unk: CUInt8Array[4]  # TODO: confirm this is there on PSP
     size: CUInt32
     offset: CUInt32
 
