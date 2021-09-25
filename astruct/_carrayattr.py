@@ -1,7 +1,7 @@
 from typing import Annotated, Any, Optional
 import typing
 from dataclasses import dataclass
-from ._type_hint_utils import hint_is_specialized, first_annotated_md_of_type
+from ._type_hint_utils import hint_is_specialized, first_annotated_md_of_type, issubclass_static
 from .type_hints.metadata import Length
 from .type_hints.carray import CArray
 from .type_hints.ctypes_aliases import AnyCType, is_ctype_subclass
@@ -27,19 +27,23 @@ class CArrayAttr:
         hint is not somehow related to CArray (either an Annotated or one of
         the helpers), returns None.
         """
-        if unannotated_hint is CArray:
-            # This is either a bare CArray with no length or an Annotated
-            # version of the same. Either way it's wrong.
-            raise TypeError('CArray type hints must use Annotated with the Length metadata')
+        if typing.get_origin(unannotated_hint) is None:
+            # The actual type is unspecialized. If it's a CArray subclass,
+            # this means we either have a bare CArray hint with no length, or
+            # an Annotated version of the same, both of which are errors.
+            if issubclass_static(unannotated_hint, CArray):
+                raise TypeError('CArray type hints must use Annotated with the Length metadata')
 
         origin: Optional[Any] = typing.get_origin(unannotated_hint)
         if origin is None:
             return None
 
-        if hint_is_specialized(hint, Annotated) and origin is CArray:
+        origin_is_carray = issubclass_static(origin, CArray)
+
+        if hint_is_specialized(hint, Annotated) and origin_is_carray:
             return cls._from_annotated(hint, unannotated_hint)
 
-        if origin is CArray:
+        if origin_is_carray:
             # This must be an un-Annotated CArray
             raise TypeError('CArray type hints must use Annotated with the Length metadata')
 

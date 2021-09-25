@@ -16,6 +16,24 @@ def hint_is_specialized(hint: Any, target: Any) -> bool:
     return typing.get_origin(hint) is target
 
 
+def issubclass_static(subtype: type, parent: type) -> bool:
+    """Attempts to detect if subtype is a subclass of parent, without any
+    typechecking trickery.
+
+    E.g., when dealing with Protocols, normal issubclass will try to detect
+    if a given class implements the protocol (or throw an error if it's not
+    @runtime_checkable). But if you actually want to know if a given type is
+    a subclass of another Protocol type, this is the method for you.
+
+    Note that this can still be thrown off by classes that mess with their
+    mro, like GenericAlias.
+    """
+    try:
+        return parent in subtype.mro()
+    except AttributeError:
+        return False
+
+
 def first_annotated_md_of_type(note: Any, md_cls: type[_T]) -> Optional[_T]:
     """If note is an Annotated type hint, returns the first piece of metadata
     belonging to it that is an instance of md_cls.
