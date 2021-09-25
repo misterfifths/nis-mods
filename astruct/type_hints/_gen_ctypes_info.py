@@ -174,7 +174,6 @@ def format_array_type(element_ctypename: str, element_pytypename: str) -> str:
     res = f'''
         class {classname}(CArray[{element_pytypename}, {element_ctypename}]):
             _type_: ClassVar[type[{element_ctypename}]] = {element_ctypename}
-            _py_type_: ClassVar[type[{element_pytypename}]] = {element_pytypename}
 
             def __class_getitem__(cls, params: Any) -> Any:
                 return _shared_class_getitem(cls, params)

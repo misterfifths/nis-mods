@@ -55,7 +55,6 @@ def _shared_class_getitem(cls: type[CArray[Any, Any]], params: Any) -> Any:
 # int arrays
 class CByteArray(CArray[int, C.c_byte]):
     _type_: ClassVar[type[C.c_byte]] = C.c_byte
-    _py_type_: ClassVar[type[int]] = int
 
     def __class_getitem__(cls, params: Any) -> Any:
         return _shared_class_getitem(cls, params)
@@ -63,7 +62,6 @@ class CByteArray(CArray[int, C.c_byte]):
 
 class CIntArray(CArray[int, C.c_int]):
     _type_: ClassVar[type[C.c_int]] = C.c_int
-    _py_type_: ClassVar[type[int]] = int
 
     def __class_getitem__(cls, params: Any) -> Any:
         return _shared_class_getitem(cls, params)
@@ -71,7 +69,6 @@ class CIntArray(CArray[int, C.c_int]):
 
 class CInt16Array(CArray[int, C.c_int16]):
     _type_: ClassVar[type[C.c_int16]] = C.c_int16
-    _py_type_: ClassVar[type[int]] = int
 
     def __class_getitem__(cls, params: Any) -> Any:
         return _shared_class_getitem(cls, params)
@@ -79,7 +76,6 @@ class CInt16Array(CArray[int, C.c_int16]):
 
 class CInt32Array(CArray[int, C.c_int32]):
     _type_: ClassVar[type[C.c_int32]] = C.c_int32
-    _py_type_: ClassVar[type[int]] = int
 
     def __class_getitem__(cls, params: Any) -> Any:
         return _shared_class_getitem(cls, params)
@@ -87,7 +83,6 @@ class CInt32Array(CArray[int, C.c_int32]):
 
 class CInt64Array(CArray[int, C.c_int64]):
     _type_: ClassVar[type[C.c_int64]] = C.c_int64
-    _py_type_: ClassVar[type[int]] = int
 
     def __class_getitem__(cls, params: Any) -> Any:
         return _shared_class_getitem(cls, params)
@@ -95,7 +90,6 @@ class CInt64Array(CArray[int, C.c_int64]):
 
 class CInt8Array(CArray[int, C.c_int8]):
     _type_: ClassVar[type[C.c_int8]] = C.c_int8
-    _py_type_: ClassVar[type[int]] = int
 
     def __class_getitem__(cls, params: Any) -> Any:
         return _shared_class_getitem(cls, params)
@@ -103,7 +97,6 @@ class CInt8Array(CArray[int, C.c_int8]):
 
 class CLongArray(CArray[int, C.c_long]):
     _type_: ClassVar[type[C.c_long]] = C.c_long
-    _py_type_: ClassVar[type[int]] = int
 
     def __class_getitem__(cls, params: Any) -> Any:
         return _shared_class_getitem(cls, params)
@@ -111,7 +104,6 @@ class CLongArray(CArray[int, C.c_long]):
 
 class CLongLongArray(CArray[int, C.c_longlong]):
     _type_: ClassVar[type[C.c_longlong]] = C.c_longlong
-    _py_type_: ClassVar[type[int]] = int
 
     def __class_getitem__(cls, params: Any) -> Any:
         return _shared_class_getitem(cls, params)
@@ -119,7 +111,6 @@ class CLongLongArray(CArray[int, C.c_longlong]):
 
 class CShortArray(CArray[int, C.c_short]):
     _type_: ClassVar[type[C.c_short]] = C.c_short
-    _py_type_: ClassVar[type[int]] = int
 
     def __class_getitem__(cls, params: Any) -> Any:
         return _shared_class_getitem(cls, params)
@@ -127,7 +118,6 @@ class CShortArray(CArray[int, C.c_short]):
 
 class CSizeTArray(CArray[int, C.c_size_t]):
     _type_: ClassVar[type[C.c_size_t]] = C.c_size_t
-    _py_type_: ClassVar[type[int]] = int
 
     def __class_getitem__(cls, params: Any) -> Any:
         return _shared_class_getitem(cls, params)
@@ -135,7 +125,6 @@ class CSizeTArray(CArray[int, C.c_size_t]):
 
 class CSSizeTArray(CArray[int, C.c_ssize_t]):
     _type_: ClassVar[type[C.c_ssize_t]] = C.c_ssize_t
-    _py_type_: ClassVar[type[int]] = int
 
     def __class_getitem__(cls, params: Any) -> Any:
         return _shared_class_getitem(cls, params)
@@ -143,7 +132,6 @@ class CSSizeTArray(CArray[int, C.c_ssize_t]):
 
 class CUByteArray(CArray[int, C.c_ubyte]):
     _type_: ClassVar[type[C.c_ubyte]] = C.c_ubyte
-    _py_type_: ClassVar[type[int]] = int
 
     def __class_getitem__(cls, params: Any) -> Any:
         return _shared_class_getitem(cls, params)
@@ -151,7 +139,6 @@ class CUByteArray(CArray[int, C.c_ubyte]):
 
 class CUIntArray(CArray[int, C.c_uint]):
     _type_: ClassVar[type[C.c_uint]] = C.c_uint
-    _py_type_: ClassVar[type[int]] = int
 
     def __class_getitem__(cls, params: Any) -> Any:
         return _shared_class_getitem(cls, params)
@@ -159,7 +146,6 @@ class CUIntArray(CArray[int, C.c_uint]):
 
 class CUInt16Array(CArray[int, C.c_uint16]):
     _type_: ClassVar[type[C.c_uint16]] = C.c_uint16
-    _py_type_: ClassVar[type[int]] = int
 
     def __class_getitem__(cls, params: Any) -> Any:
         return _shared_class_getitem(cls, params)
@@ -167,7 +153,6 @@ class CUInt16Array(CArray[int, C.c_uint16]):
 
 class CUInt32Array(CArray[int, C.c_uint32]):
     _type_: ClassVar[type[C.c_uint32]] = C.c_uint32
-    _py_type_: ClassVar[type[int]] = int
 
     def __class_getitem__(cls, params: Any) -> Any:
         return _shared_class_getitem(cls, params)
@@ -175,7 +160,6 @@ class CUInt32Array(CArray[int, C.c_uint32]):
 
 class CUInt64Array(CArray[int, C.c_uint64]):
     _type_: ClassVar[type[C.c_uint64]] = C.c_uint64
-    _py_type_: ClassVar[type[int]] = int
 
     def __class_getitem__(cls, params: Any) -> Any:
         return _shared_class_getitem(cls, params)
@@ -183,7 +167,6 @@ class CUInt64Array(CArray[int, C.c_uint64]):
 
 class CUInt8Array(CArray[int, C.c_uint8]):
     _type_: ClassVar[type[C.c_uint8]] = C.c_uint8
-    _py_type_: ClassVar[type[int]] = int
 
     def __class_getitem__(cls, params: Any) -> Any:
         return _shared_class_getitem(cls, params)
@@ -191,7 +174,6 @@ class CUInt8Array(CArray[int, C.c_uint8]):
 
 class CULongArray(CArray[int, C.c_ulong]):
     _type_: ClassVar[type[C.c_ulong]] = C.c_ulong
-    _py_type_: ClassVar[type[int]] = int
 
     def __class_getitem__(cls, params: Any) -> Any:
         return _shared_class_getitem(cls, params)
@@ -199,7 +181,6 @@ class CULongArray(CArray[int, C.c_ulong]):
 
 class CULongLongArray(CArray[int, C.c_ulonglong]):
     _type_: ClassVar[type[C.c_ulonglong]] = C.c_ulonglong
-    _py_type_: ClassVar[type[int]] = int
 
     def __class_getitem__(cls, params: Any) -> Any:
         return _shared_class_getitem(cls, params)
@@ -207,7 +188,6 @@ class CULongLongArray(CArray[int, C.c_ulonglong]):
 
 class CUShortArray(CArray[int, C.c_ushort]):
     _type_: ClassVar[type[C.c_ushort]] = C.c_ushort
-    _py_type_: ClassVar[type[int]] = int
 
     def __class_getitem__(cls, params: Any) -> Any:
         return _shared_class_getitem(cls, params)
@@ -216,7 +196,6 @@ class CUShortArray(CArray[int, C.c_ushort]):
 # float arrays
 class CDoubleArray(CArray[float, C.c_double]):
     _type_: ClassVar[type[C.c_double]] = C.c_double
-    _py_type_: ClassVar[type[float]] = float
 
     def __class_getitem__(cls, params: Any) -> Any:
         return _shared_class_getitem(cls, params)
@@ -224,7 +203,6 @@ class CDoubleArray(CArray[float, C.c_double]):
 
 class CFloatArray(CArray[float, C.c_float]):
     _type_: ClassVar[type[C.c_float]] = C.c_float
-    _py_type_: ClassVar[type[float]] = float
 
     def __class_getitem__(cls, params: Any) -> Any:
         return _shared_class_getitem(cls, params)
@@ -232,7 +210,6 @@ class CFloatArray(CArray[float, C.c_float]):
 
 class CLongDoubleArray(CArray[float, C.c_longdouble]):
     _type_: ClassVar[type[C.c_longdouble]] = C.c_longdouble
-    _py_type_: ClassVar[type[float]] = float
 
     def __class_getitem__(cls, params: Any) -> Any:
         return _shared_class_getitem(cls, params)
