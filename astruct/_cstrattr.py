@@ -3,8 +3,10 @@ import typing
 import ctypes as C
 from dataclasses import dataclass
 from ._type_hint_utils import hint_is_specialized, first_annotated_md_of_type
-from .type_hints.ctypes_aliases import AnyCType, CharCType
-from .type_hints.metadata import Encoding, NotNullTerminated
+from .ctypes_utils import get_bytes_for_field, set_bytes_for_field
+from .type_hints.ctypes_aliases import CharCType
+from .type_hints.extras import CStructureOrUnion
+from .type_hints.metadata import DoNotZeroExtraBytes, Encoding, NotNullTerminated
 from .type_hints.cstr import CStr, CWStr
 
 
@@ -14,6 +16,7 @@ class CStrAttr:
     typed_struct."""
     RAW_FIELD_PREFIX: ClassVar[str] = '_raw_'  # TODO: @dataclass + Final = sad
 
+    attr_name: str
     raw_field_name: str
     max_length: int
     element_ctype: type[CharCType]
@@ -21,6 +24,7 @@ class CStrAttr:
     encoding: str = 'shift-jis'
     errors: str = 'strict'
     null_terminated: bool = True
+    zero_extra_bytes: bool = True
 
     @classmethod
     def _from_type_hint(cls,
@@ -44,7 +48,11 @@ class CStrAttr:
             return None
 
         max_length = typing.get_args(unannotated_hint)[0]
-        res = cls(cls.RAW_FIELD_PREFIX + attr_name, max_length, ctype, ctype * max_length)
+        res = cls(attr_name,
+                  cls.RAW_FIELD_PREFIX + attr_name,
+                  max_length,
+                  ctype,
+                  ctype * max_length)
 
         if encoding_md := first_annotated_md_of_type(hint, Encoding):
             res.encoding = encoding_md.encoding
@@ -53,41 +61,81 @@ class CStrAttr:
         if first_annotated_md_of_type(hint, NotNullTerminated):
             res.null_terminated = False
 
+        if first_annotated_md_of_type(hint, DoNotZeroExtraBytes):
+            res.zero_extra_bytes = False
+
         return res
 
     def bytes_to_str(self, bs: bytes) -> str:
         """Convert the given bytes to a string, according to the attributes of
         this instance.
 
-        If null_terminated is True, all bytes after the first zero byte are
-        ignored.
+        If null_terminated is True, all characters after the first zero
+        character in the output are removed before returning the result. If
+        null_terminated is True and errors is 'strict', a ValueError is raised
+        if the resulting string is not null-terminated.
         """
+        # TODO: cope better with garbage data after a null? best way to handle
+        # that is probably to use an incremental decoder and stop when we get
+        # a null.
+        s = bs.decode(self.encoding, self.errors)
         if self.null_terminated:
-            bs = bs.split(b'\0', 1)[0]
+            bits = s.split('\0', 1)
+            if len(bits) == 1:
+                if self.errors == 'strict':
+                    raise ValueError('Missing null terminator in string')
+            else:
+                s = bits[0]
 
-        return bs.decode(self.encoding, self.errors)
+        return s
 
     def str_to_bytes(self, s: str) -> bytes:
         """Convert the given string to bytes, according to the attributes of
         this instance.
 
-        A zero byte is appended to the result if null_terminated is True.
+        If null_terminated is True, a zero character is appended to the input
+        (if needed) before encoding.
+
         Raises an IndexError if encoding the string results in a series of
         bytes that is longer than max_length.
         """
+        if self.null_terminated and not s.endswith('\0'):
+            s += '\0'
+
         bs = s.encode(self.encoding, self.errors)
-        if self.null_terminated:
-            bs += b'\0'
 
         if len(bs) > self.max_length:
             raise IndexError(f'String is {len(bs)} bytes, but the maximum is {self.max_length}')
 
+        if self.zero_extra_bytes and len(bs) < self.max_length:
+            # Zero pad to the full length of the field
+            bs += b'\0' * (self.max_length - len(bs))
+
         return bs
 
-    def __get__(self, instance: AnyCType, owner: Any = None) -> str:
-        raw_val: bytes = getattr(instance, self.raw_field_name)
-        return self.bytes_to_str(raw_val)
+    def __get__(self, instance: CStructureOrUnion, owner: Any = None) -> str:
+        # See the note below; getting the attr for c_char arrays is weird and
+        # enforces null termination, so we need to fetch the raw bytes here.
+        raw_val = get_bytes_for_field(instance, self.raw_field_name)
+        try:
+            return self.bytes_to_str(raw_val)
+        except ValueError as e:
+            raise ValueError(f'Missing null terminator for field "{self.attr_name}"') from e
 
-    def __set__(self, instance: AnyCType, value: str) -> None:
+    def __set__(self, instance: CStructureOrUnion, value: str) -> None:
+        # Directly setting ctypes arrays of c_chars acts really weird. It
+        # effectively silently null-terminates the value you set if it can, but
+        # doesn't if it won't fit. E.g., say you have a field x of type
+        # c_char * 5. If you do x = b'ab', it will set the first three bytes
+        # in the underlying buffer to 'ab\0' and leave the remaining bytes
+        # alone. If you do x = b'abcde', it won't complain but won't add a
+        # zero (because there's no room).
+        # It will also treat the incoming data as null-terminated. If you do
+        # x = b'ab\0de', everything after the zero is ignored and the
+        # corresponding bytes are untouched in the underlying buffer. The same
+        # goes for something like b'a\0\0\0\0'. So the best way for us to get
+        # the behavior we want is to manually memmove the bytes in here.
+        # str_to_bytes generates what we actually want the final bytes in the
+        # buffer to be, and we just copy it into place.
         bs = self.str_to_bytes(value)
-        setattr(instance, self.raw_field_name, bs)
+        set_bytes_for_field(instance, self.raw_field_name, bs)

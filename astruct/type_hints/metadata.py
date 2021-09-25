@@ -45,6 +45,21 @@ class NotNullTerminated:
     pass
 
 
+class DoNotZeroExtraBytes:
+    """Annotation metadata to indicate that, when assigning a string to a CStr
+    field that is shorter than its length, the remaining bytes for the field
+    should not be zeroed.
+
+    The default behavior is to clear all those bytes, so that if, e.g., you
+    assign a three-character string to a 6-byte field, the remaining 3 bytes
+    are overwritten with zeroes. Provide this metadata to disable that
+    behavior.
+
+    This is distinct (but complementary to) the null-termination behavior.
+    """
+    pass
+
+
 @dataclass(frozen=True)
 class Encoding:
     """Annotation metadata to control the encoding of a CStr or CWStr.
