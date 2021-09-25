@@ -1,6 +1,7 @@
 from typing import Any, ClassVar, Optional
 import typing
 import ctypes as C
+import codecs
 from dataclasses import dataclass
 from ._type_hint_utils import hint_is_specialized, first_annotated_md_of_type
 from .ctypes_utils import get_bytes_for_field, set_bytes_for_field
@@ -25,6 +26,7 @@ class CStrAttr:
     errors: str = 'strict'
     null_terminated: bool = True
     zero_extra_bytes: bool = True
+    _incremental_decoder: Optional[codecs.IncrementalDecoder] = None
 
     @classmethod
     def _from_type_hint(cls,
@@ -61,8 +63,44 @@ class CStrAttr:
         if first_annotated_md_of_type(hint, NotNullTerminated):
             res.null_terminated = False
 
+        if res.null_terminated:
+            # We only need this for null-terminated strings
+            res._incremental_decoder = codecs.getincrementaldecoder(res.encoding)(res.errors)
+
         if first_annotated_md_of_type(hint, DoNotZeroExtraBytes):
             res.zero_extra_bytes = False
+
+        return res
+
+    def _decode_null_terminated(self, bs: bytes) -> str:
+        """Decodes up to the first null character in the given bytes and
+        returns the result (without the null). Does not consider attempt to
+        decode any bytes after the first null character.
+
+        If errors is 'strict', raises a ValueError if no null character is
+        decoded from the bytes.
+        """
+        assert self._incremental_decoder
+
+        res = ''
+        one_byte = bytearray(1)  # avoiding some churn
+        for i, b in enumerate(bs):
+            final = i == len(bs) - 1
+            one_byte[0] = b
+
+            # decode() returns '' if the input was ok but incomplete, a
+            # character if it has decoded something, or raises an error if
+            # the byte moved us to an invalid state.
+            if c := self._incremental_decoder.decode(one_byte, final):
+                if c == '\0':
+                    # We're done!
+                    return res
+
+                res += c
+
+        # We didn't hit a null.
+        if self.errors == 'strict':
+            raise ValueError('Missing null terminator in string')
 
         return res
 
@@ -70,24 +108,14 @@ class CStrAttr:
         """Convert the given bytes to a string, according to the attributes of
         this instance.
 
-        If null_terminated is True, all characters after the first zero
-        character in the output are removed before returning the result. If
-        null_terminated is True and errors is 'strict', a ValueError is raised
-        if the resulting string is not null-terminated.
+        If null_terminated is True, all bytes after the first decoded zero
+        character are ignored. If null_terminated is True and errors is
+        'strict', a ValueError is raised if no zero character is decoded.
         """
-        # TODO: cope better with garbage data after a null? best way to handle
-        # that is probably to use an incremental decoder and stop when we get
-        # a null.
-        s = bs.decode(self.encoding, self.errors)
         if self.null_terminated:
-            bits = s.split('\0', 1)
-            if len(bits) == 1:
-                if self.errors == 'strict':
-                    raise ValueError('Missing null terminator in string')
-            else:
-                s = bits[0]
+            return self._decode_null_terminated(bs)
 
-        return s
+        return bs.decode(self.encoding, self.errors)
 
     def str_to_bytes(self, s: str) -> bytes:
         """Convert the given string to bytes, according to the attributes of
