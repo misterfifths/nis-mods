@@ -3,7 +3,7 @@ import typing
 from dataclasses import dataclass
 from ._type_hint_utils import hint_is_specialized, first_annotated_md_of_type, issubclass_static
 from .type_hints.metadata import Length
-from .type_hints.carray import CArray
+from .type_hints.carray import CArray, CStructureArray
 from .type_hints.ctypes_aliases import AnyCType, is_ctype_subclass
 
 
@@ -50,14 +50,37 @@ class CArrayAttr:
         return None
 
     @classmethod
-    def _from_annotated(cls, hint: Any, unannotated_hint: Any) -> 'CArrayAttr':
-        type_args = typing.get_args(unannotated_hint)
-        if len(type_args) != 2:
-            raise TypeError('CArray requires two type arguments')
+    def _get_ctype_from_hint(cls, unannotated_hint: Any) -> Optional[type[AnyCType]]:
+        is_structure_array = hint_is_specialized(unannotated_hint, CStructureArray)
 
-        ctype = type_args[1]
-        if not is_ctype_subclass(ctype):
-            raise TypeError('The second type argument to CArray must be a ctype')
+        type_args = typing.get_args(unannotated_hint)
+
+        ctype = None
+        if is_structure_array and len(type_args) == 1:
+            ctype = type_args[0]
+        elif not is_structure_array and len(type_args) == 2:
+            ctype = type_args[1]
+
+        if ctype is not None and is_ctype_subclass(ctype):
+            return ctype
+
+        return None
+
+    @classmethod
+    def _from_annotated(cls, hint: Any, unannotated_hint: Any) -> 'CArrayAttr':
+        # hint is known to be an Annotated[CArray, ...] (or subclass)
+        # TODO: assuming it's either CArray or CStructureArray, and hardcoding
+        # the type parameters for each. Do that more generically?
+        is_structure_array = hint_is_specialized(unannotated_hint, CStructureArray)
+
+        ctype = cls._get_ctype_from_hint(unannotated_hint)
+        if ctype is None:
+            if is_structure_array:
+                raise TypeError('CStructureArray and CUnionArray require a single ctype type '
+                                'parameter')
+            else:
+                raise TypeError('CArray requires two type parameters, the second of which must '
+                                'be a ctype')
 
         if length_md := first_annotated_md_of_type(hint, Length):
             return cls(length_md.length, ctype)

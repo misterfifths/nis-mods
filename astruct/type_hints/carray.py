@@ -2,10 +2,13 @@
 
 from typing import ClassVar, Iterable, Iterator, Protocol, TypeVar, overload
 from abc import abstractmethod
+import ctypes as C
 from .ctypes_aliases import AnyCType
 
 _T = TypeVar('_T')
 _CT = TypeVar('_CT', bound=AnyCType)
+_CS = TypeVar('_CS', bound=C.Structure)
+_CU = TypeVar('_CU', bound=C.Union)
 
 
 # Ideally this would start with Sequence and add things from there, but after
@@ -35,8 +38,8 @@ class CArray(Iterable[_T], Protocol[_T, _CT]):
     the above, for instance:
         grades: CUInt8Array[20]
 
-    The long-hand form is still useful for arrays of custom Structure or Union
-    subclasses.
+    For arrays of Structures or Unions, you can use the CStructureArray and
+    CUnionArray types as shorthand; they only take one type argument.
     """
     _type_: ClassVar[type[_CT]]
 
@@ -68,3 +71,24 @@ class CArray(Iterable[_T], Protocol[_T, _CT]):
 
     @abstractmethod
     def __reversed__(self) -> Iterator[_T]: ...
+
+
+class CStructureArray(CArray[_CS, _CS]):
+    """CStructureArray and CUnionArray are protocols representing a
+    ctypes.Array of ctypes.Structures or Unions.
+
+    The types are shorthand for a CArray where the ctype of the underlying data
+    and the exposed Python type are one and the same, which is the case for
+    Structure and Union subclasses. If MyStruct is a Structure, these two
+    types are exactly equivalent:
+        CArray[MyStruct, MyStruct]
+        CStructureArray[MyStruct]
+
+    CStructureArray and CUnionArray can be used as type hints on attributes in
+    typed_struct classes, just like CArray.
+    """
+    pass
+
+
+class CUnionArray(CArray[_CU, _CU]):
+    __doc__ = CStructureArray.__doc__
