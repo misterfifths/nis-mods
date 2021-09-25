@@ -2,6 +2,7 @@
 
 from typing import ClassVar, Final, Generic, Any, TypeVar
 import typing
+import ctypes as C
 from ._type_hint_utils import hint_is_specialized
 from .type_hints.extras import CStructureOrUnion, CStructureField
 from ._cstrattr import CStrAttr
@@ -94,4 +95,8 @@ def typed_struct(cls: type[_CSU]) -> type[_CSU]:
         skill_aptitudes: Annotated[Sequence[int], CField(c_uint8 * 8)]
         name: Annotated[str, CStrField(16)]
     """
-    return _TypedStructBuilder(cls).wrap()
+    if not issubclass(cls, (C.Structure, C.Union)):
+        raise TypeError('@typed_struct can only be applied to subclasses of ctypes.Structure or '
+                        'ctypes.Union')
+
+    return _TypedStructBuilder(cls).wrap()  # type: ignore  # TODO: wtf mypy?
