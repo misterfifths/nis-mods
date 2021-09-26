@@ -177,7 +177,6 @@ def format_array_type(element_ctypename: str, element_pytypename: str) -> str:
     res = f'''
         class {classname}(CArray[{element_pytypename}, {element_ctypename}]):
             _type_: ClassVar[type[{element_ctypename}]] = {element_ctypename}
-            _py_type_: ClassVar[type[{element_pytypename}]] = {element_pytypename}
 
             def __class_getitem__(cls, params: Any) -> Any:
                 return _shared_class_getitem(cls, params)
@@ -348,7 +347,9 @@ def generate_helpers_file() -> str:
         if not isinstance(params, int) or params <= 0:
             raise TypeError(f'{cls.__name__} requires a single, positive integer length argument')
 
-        return Annotated[CArray[cls._py_type_, cls._type_], Length(params)]  # type: ignore
+        # The generic base class with its type arguments is in __orig_bases__
+        carray_base = cls.__orig_bases__[0]  # type: ignore
+        return Annotated[carray_base, Length(params)]  # type: ignore
     '''))
 
     fprint()
