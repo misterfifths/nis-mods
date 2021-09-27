@@ -52,9 +52,10 @@ class AStructCheckerPlugin(Plugin):
             node: SymbolTableNode = api.lookup_qualified(arg.name, ctx)  # type: ignore
 
             # node.type should be an Instance, which is to say it's a
-            # particular instantiation of a type. Instance.type should be
-            # TypeInfo for builtins.int.
-            if not isinstance(node.type, Instance) or node.type.type.fullname != 'builtins.int':
+            # particular instantiation of a type. If it is, then node.type.type
+            # is a TypeInfo for the deduced type of the value, and that should
+            # be a subtype of int.
+            if not isinstance(node.type, Instance) or not node.type.type.has_base('builtins.int'):
                 return False
         else:
             return False
