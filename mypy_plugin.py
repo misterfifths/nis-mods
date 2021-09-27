@@ -1,8 +1,7 @@
 from typing import Any, Final, Optional, Callable
 
-from mypy.nodes import ClassDef, SymbolTableNode, TypeInfo, Var
-from mypy.plugin import (ClassDefContext, Plugin, AnalyzeTypeContext,
-                         SemanticAnalyzerPluginInterface)
+from mypy.nodes import SymbolTableNode, Var
+from mypy.plugin import ClassDefContext, Plugin, AnalyzeTypeContext
 from mypy.types import Instance, RawExpressionType, Type as MyPyType, UnboundType
 from mypy.errorcodes import TYPE_ARG, VALID_TYPE
 
@@ -105,21 +104,17 @@ class AStructCheckerPlugin(Plugin):
         pass
 
     def _decorator_hook(self, classdef_ctx: ClassDefContext) -> None:
-        # print(f'got a typed_struct! {classdef_ctx.cls}')
-        api: SemanticAnalyzerPluginInterface = classdef_ctx.api
-
-        cls: ClassDef = classdef_ctx.cls
-        info: TypeInfo = cls.info
+        cls, _, api = classdef_ctx
+        info = cls.info
 
         if not info.has_base(CTYPES_STRUCTURE_FULLNAME) and \
            not info.has_base(CTYPES_UNION_FULLNAME):
-            print(f'!! {info=} {info.mro=} {CTYPES_STRUCTURE_FULLNAME=}')
-            api.fail('@typed_struct can only be applied to subclasses of ctypes.Structure or '
+            api.fail('typed_struct can only be applied to subclasses of ctypes.Structure or '
                      'ctypes.Union', ctx=cls, serious=True, code=VALID_TYPE)
 
         if fields_sym := info.names.get('_fields_'):
             assert fields_sym.node  # for type checking purposes to remove the Optional
-            api.fail('@typed_struct cannot be applied to classes with a _fields_ attribute',
+            api.fail('typed_struct cannot be applied to classes with a _fields_ attribute',
                      ctx=fields_sym.node, serious=True, code=VALID_TYPE)
 
         for sym_name, sym in info.names.items():
