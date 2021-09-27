@@ -20,8 +20,7 @@ class CFieldAttr:
         If the hint is not an Annotated instance with the CField metadata,
         returns None.
         """
-        cfld = first_annotated_md_of_type(hint, CField)
-        if cfld is None:
-            return None
+        if cfld := first_annotated_md_of_type(hint, CField):
+            return cls(cfld)
 
-        return cls(cfld)
+        return None
