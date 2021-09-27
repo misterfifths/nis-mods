@@ -7,7 +7,7 @@ from mypy.types import Instance, RawExpressionType, Type as MyPyType, UnboundTyp
 from mypy.errorcodes import TYPE_ARG, VALID_TYPE
 
 import astruct
-from astruct.type_hints import CWStr, CStr, CUInt8Array
+from astruct.type_hints import CStr, CUInt8Array
 from astruct.type_hints.carray import CArray
 
 
@@ -15,8 +15,7 @@ def _fullname(t: Any) -> str:
     return t.__module__ + '.' + t.__qualname__
 
 
-SIZED_STRING_TYPE_FULLNAMES: Final = frozenset((_fullname(CStr), _fullname(CWStr)))
-SIZED_STRING_TYPE_NAMES: Final = frozenset((CStr.__name__, CWStr.__name__))
+SIZED_STRING_TYPE_FULLNAME: Final = _fullname(CStr)
 SIZED_ARRAY_TYPE_FULLNAME_PREFIX: Final = _fullname(CUInt8Array).removesuffix('UInt8Array')
 SIZED_ARRAY_TYPE_FULLNAME_SUFFIX: Final = 'Array'
 
@@ -71,7 +70,7 @@ class AStructCheckerPlugin(Plugin):
     def _str_type_analyze_hook(self, analy_ctx: AnalyzeTypeContext) -> MyPyType:
         self._check_size_arg(analy_ctx)
 
-        # Tell mypy that C[W]Str[x] == str
+        # Tell mypy that CStr[x] == str
         return analy_ctx.api.named_type('builtins.str', [])
 
     def _array_type_analyze_hook(self, analy_ctx: AnalyzeTypeContext) -> MyPyType:
@@ -86,7 +85,7 @@ class AStructCheckerPlugin(Plugin):
 
     def get_type_analyze_hook(self,
                               fullname: str) -> Optional[Callable[[AnalyzeTypeContext], MyPyType]]:
-        if fullname in SIZED_STRING_TYPE_FULLNAMES:
+        if fullname == SIZED_STRING_TYPE_FULLNAME:
             return self._str_type_analyze_hook
 
         if fullname.startswith(SIZED_ARRAY_TYPE_FULLNAME_PREFIX) and \
