@@ -1,4 +1,4 @@
-from typing import Any, ClassVar, Optional
+from typing import Any, ClassVar, Generic, Optional, TypeVar
 import typing
 import ctypes as C
 import codecs
@@ -47,14 +47,21 @@ class CStrAttr:
         elif hint_is_specialized(unannotated_hint, CWStr):
             ctype = C.c_wchar
         else:
+            if unannotated_hint is CStr or unannotated_hint is CWStr:
+                raise TypeError('CStr and CWStr require a single, positive integer length '
+                                'argument')
             return None
 
         max_length = typing.get_args(unannotated_hint)[0]
+
+        if not isinstance(max_length, int) or max_length <= 0:
+            raise TypeError('CStr and CWStr require a single, positive integer length argument')
+
         res = cls(attr_name,
                   cls.RAW_FIELD_PREFIX + attr_name,
                   max_length,
                   ctype,
-                  ctype * max_length)
+                  ctype * max_length)  # type: ignore  # TODO: will be fixed when CWStr is axed
 
         if encoding_md := first_annotated_md_of_type(hint, Encoding):
             res.encoding = encoding_md.encoding
