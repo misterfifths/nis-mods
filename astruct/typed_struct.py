@@ -46,11 +46,11 @@ class _TypedStructBuilder(Generic[_CSU]):
 
             unannotated_hint = self.unannotated_hints[attr_name]
 
-            if cfldattr := CFieldAttr._from_type_hint(attr_name, hint, unannotated_hint):
+            if cfldattr := CFieldAttr.from_type_hint(attr_name, hint, unannotated_hint):
                 self._apply_cfield(attr_name, cfldattr)
-            elif cstrattr := CStrAttr._from_type_hint(attr_name, hint, unannotated_hint):
+            elif cstrattr := CStrAttr.from_type_hint(attr_name, hint, unannotated_hint):
                 self._apply_cstr_field(attr_name, cstrattr)
-            elif carrayattr := CArrayAttr._from_type_hint(attr_name, hint, unannotated_hint):
+            elif carrayattr := CArrayAttr.from_type_hint(attr_name, hint, unannotated_hint):
                 self._apply_array_field(attr_name, carrayattr)
 
         self.target_cls._fields_ = self.fields[:]  # type: ignore[attr-defined]

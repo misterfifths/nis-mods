@@ -11,10 +11,10 @@ class CFieldAttr:
     cfield: CField
 
     @classmethod
-    def _from_type_hint(cls,
-                        attr_name: str,
-                        hint: Any,
-                        unannotated_hint: Any) -> Optional['CFieldAttr']:
+    def from_type_hint(cls,
+                       attr_name: str,
+                       hint: Any,
+                       unannotated_hint: Any) -> Optional['CFieldAttr']:
         """Constructs an instance from the given type hint if possible.
 
         If the hint is not an Annotated instance with the CField metadata,

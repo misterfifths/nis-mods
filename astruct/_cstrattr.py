@@ -59,10 +59,10 @@ class CStrAttr:
     _incremental_decoder: Optional[codecs.IncrementalDecoder] = None
 
     @classmethod
-    def _from_type_hint(cls,
-                        attr_name: str,
-                        hint: Any,
-                        unannotated_hint: Any) -> Optional['CStrAttr']:
+    def from_type_hint(cls,
+                       attr_name: str,
+                       hint: Any,
+                       unannotated_hint: Any) -> Optional['CStrAttr']:
         """Constructs an instance from the given type hint if possible.
 
         Retrieves relevant metadata (e.g. Encoding) from the hint if it is
