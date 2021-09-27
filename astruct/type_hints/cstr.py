@@ -1,22 +1,21 @@
-from typing import Any
+from typing import Any, Optional
+import typing
 from types import GenericAlias
 
 """
 We want to be able to type-hint fixed-length C strings on classes like this:
     name: CStr[10]
 
-In order for that to work in a useful way, CStr needs to be a str subclass.
-But if it's an actual subclass, we can't do something simple like
+But even if CStr is a str subclass, we can't do something simple like
     x.name = 'Joan'
-because assigning a str to a subclass isn't valid.
+because assigning a str to a subclass of it isn't valid.
 
-So the hacky solution is this: CStr is subclasses of str with
-__class_getitem__. (Honestly they probably don't even need to be str
-subclasses, but it can't hurt in case someone tries to create an instance.)
+Our mypy plugin works around this by resolving CStr to str. But for pylance/
+pyright, we have to get a little more creative. We trick it with the
+conditional __get__ and __set__ methods below that make CStr look like a
+descriptor for a str property.
 
-We trick the type system with a stub for this file (the .pyi) that makes CStr
-act like a property descriptor, with __get__ and __set__ for str. With that,
-everybody's happy!
+TODO: we should unify this with CStrAttr, which is actually a descriptor.
 """
 
 
@@ -68,3 +67,8 @@ class CStr(str):
             raise TypeError('Expected a single integer as a type parameter')
 
         return GenericAlias(cls, params)
+
+    # See the note at the top of the file about this hack.
+    if typing.TYPE_CHECKING:
+        def __get__(self, obj: Any, type: Optional[type] = None) -> str: ...
+        def __set__(self, obj: Any, value: str) -> None: ...
