@@ -6,7 +6,7 @@ from .decoder import iffy_decode
 from .display_utils import safe_2_cell_str
 
 
-def hexdump(bs: ByteString, /,
+def hexdump(bs: ByteString, *,
             offset: int = 0,
             count: Optional[int] = None,
             encoding: str = 'utf8',
