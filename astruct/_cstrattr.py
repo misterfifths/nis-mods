@@ -5,6 +5,8 @@ import codecs
 from dataclasses import dataclass
 from ._type_hint_utils import hint_is_specialized, first_annotated_md_of_type
 from .ctypes_utils import get_bytes_for_field, set_bytes_for_field
+from .str_utils import (NullTerminationError, get_incremental_decoder, encode_null_terminated,
+                        decode_null_terminated)
 from .type_hints.extras import CStructureOrUnion
 from .type_hints.metadata import DoNotZeroExtraBytes, Encoding, NotNullTerminated
 from .type_hints.cstr import CStr
@@ -98,42 +100,10 @@ class CStrAttr:
 
         if res.null_terminated:
             # We only need this for null-terminated strings
-            res._incremental_decoder = codecs.getincrementaldecoder(res.encoding)(res.errors)
+            res._incremental_decoder = get_incremental_decoder(res.encoding, res.errors)
 
         if first_annotated_md_of_type(hint, DoNotZeroExtraBytes):
             res.zero_extra_bytes = False
-
-        return res
-
-    def _decode_null_terminated(self, bs: bytes) -> str:
-        """Decodes up to the first null character in the given bytes and
-        returns the result (without the null). Does not consider attempt to
-        decode any bytes after the first null character.
-
-        If errors is 'strict', raises a ValueError if no null character is
-        decoded from the bytes.
-        """
-        assert self._incremental_decoder
-
-        res = ''
-        one_byte = bytearray(1)  # avoiding some churn
-        for i, b in enumerate(bs):
-            final = i == len(bs) - 1
-            one_byte[0] = b
-
-            # decode() returns '' if the input was ok but incomplete, a
-            # character if it has decoded something, or raises an error if
-            # the byte moved us to an invalid state.
-            if c := self._incremental_decoder.decode(one_byte, final):
-                if c == '\0':
-                    # We're done!
-                    return res
-
-                res += c
-
-        # We didn't hit a null.
-        if self.errors == 'strict':
-            raise ValueError('Missing null terminator in string')
 
         return res
 
@@ -143,10 +113,14 @@ class CStrAttr:
 
         If null_terminated is True, all bytes after the first decoded zero
         character are ignored. If null_terminated is True and errors is
-        'strict', a ValueError is raised if no zero character is decoded.
+        'strict', a NullTerminationError (a subclass of ValueError) is raised
+        if no zero character is decoded.
         """
         if self.null_terminated:
-            return self._decode_null_terminated(bs)
+            assert self._incremental_decoder
+            ignore_missing_nulls = self.errors != 'strict'
+            s, _ = decode_null_terminated(bs, self._incremental_decoder, ignore_missing_nulls)
+            return s
 
         return bs.decode(self.encoding, self.errors)
 
@@ -160,10 +134,10 @@ class CStrAttr:
         Raises an IndexError if encoding the string results in a series of
         bytes that is longer than byte_length.
         """
-        if self.null_terminated and not s.endswith('\0'):
-            s += '\0'
-
-        bs = s.encode(self.encoding, self.errors)
+        if self.null_terminated:
+            bs = encode_null_terminated(s, self.encoding, self.errors)
+        else:
+            bs = s.encode(self.encoding, self.errors)
 
         if len(bs) > self.byte_length:
             raise IndexError(f'String is {len(bs)} bytes, but the maximum is {self.byte_length}')
@@ -180,8 +154,9 @@ class CStrAttr:
         raw_val = get_bytes_for_field(instance, self.raw_field_name)
         try:
             return self.bytes_to_str(raw_val)
-        except ValueError as e:
-            raise ValueError(f'Missing null terminator for field "{self.attr_name}"') from e
+        except NullTerminationError as e:
+            raise NullTerminationError(f'Missing null terminator for field "{self.attr_name}"') \
+                from e
 
     def __set__(self, instance: CStructureOrUnion, value: str) -> None:
         # See the note at the top of the file about why we manipulate bytes
