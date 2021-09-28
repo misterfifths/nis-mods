@@ -1,4 +1,4 @@
-from typing import Final
+from typing import Annotated, Final
 import ctypes as C
 from astruct import typed_struct
 from astruct.type_hints import *
@@ -15,7 +15,11 @@ class Skill(C.Structure):
     sp_cost: CUInt16
     _zero: CUInt8Array[2]  # maybe sp_cost is 32 bits?
     name: CStr[22]
-    description: CStr[70]
+
+    # The description field uses \x87 as the escape sequence for inline icons,
+    # as used for special effects and elements. That's not valid shift-jis, so
+    # we're using this error handler to round-trip them more nicely.
+    description: Annotated[CStr[70], Encoding(errors='backslashreplace')]
     _unk2: CUInt8Array[8]
     sp_type: CUInt8
     shape: CUInt8  # 0=sphere, 1=cylinder, 2=wedge
