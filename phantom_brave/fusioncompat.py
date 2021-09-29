@@ -2,7 +2,7 @@ from typing import Final
 import ctypes as C
 from astruct import typed_struct
 from astruct.type_hints import *
-from countedtable import CountedTable
+from .countedtable import CountedTable
 
 
 # Couldn't find an in-game source of these names; these are taken from the
@@ -41,6 +41,10 @@ FUSION_COMPAT_CATEGORY_NAMES = {
     44: 'Bomb',  # also Steel Alloy from Another Marona
     45: 'Interior'
 }
+
+
+def fusion_compat_name_for_id(id: int) -> str:
+    return FUSION_COMPAT_CATEGORY_NAMES[id]
 
 
 def fusion_compat_id_for_name(name: str) -> int:

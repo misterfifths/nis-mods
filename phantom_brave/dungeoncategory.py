@@ -3,11 +3,11 @@ import ctypes as C
 import enum
 from astruct import typed_struct
 from astruct.type_hints import *
-from countedtable import CountedTable
+from .countedtable import CountedTable
 
 
 @enum.unique
-class MemberKind(enum.IntEnum):
+class CategoryMemberKind(enum.IntEnum):
     CLASS_OR_ITEM = 0
     CATEGORY = 1
 
@@ -45,19 +45,19 @@ class DungeonCategory(C.Structure):
     member_count: CUInt8
 
     @classmethod
-    def decode_member_code(cls, code: int) -> tuple[MemberKind, int]:
+    def decode_member_code(cls, code: int) -> tuple[CategoryMemberKind, int]:
         is_category = (code & 0xff00) == 0xea00
         if is_category:
-            return (MemberKind.CATEGORY, code - 0xea60)
+            return (CategoryMemberKind.CATEGORY, code - 0xea60)
 
-        return (MemberKind.CLASS_OR_ITEM, code)
+        return (CategoryMemberKind.CLASS_OR_ITEM, code)
 
     @classmethod
     def member_code_for_category(cls, category_id: int) -> int:
         return category_id + 0xea60
 
     @property
-    def members(self) -> Iterable[tuple[MemberKind, int]]:
+    def members(self) -> Iterable[tuple[CategoryMemberKind, int]]:
         for i in range(self.member_count):
             yield self.decode_member_code(self.member_codes[i])
 
@@ -79,12 +79,12 @@ class DungeonCategory(C.Structure):
 
         self.member_count = 0
 
-    def add_member(self, kind: MemberKind, member_id: int) -> None:
+    def add_member(self, kind: CategoryMemberKind, member_id: int) -> None:
         if self.member_count >= self.MAX_MEMBER_COUNT:
             raise IndexError(f'No space for new member {member_id} in category {self.name}')
 
         new_code = member_id
-        if kind == MemberKind.CATEGORY:
+        if kind == CategoryMemberKind.CATEGORY:
             new_code = self.member_code_for_category(member_id)
 
         self.member_codes[self.member_count] = new_code

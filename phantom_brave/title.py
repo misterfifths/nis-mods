@@ -3,7 +3,7 @@ import ctypes as C
 import enum
 from astruct import typed_struct
 from astruct.type_hints import *
-from countedtable import CountedTable
+from .countedtable import CountedTable
 
 
 @enum.unique

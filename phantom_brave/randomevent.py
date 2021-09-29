@@ -2,7 +2,7 @@ from typing import Final
 import ctypes as C
 from astruct import typed_struct
 from astruct.type_hints import *
-from countedtable import CountedTable
+from .countedtable import CountedTable
 
 
 @typed_struct

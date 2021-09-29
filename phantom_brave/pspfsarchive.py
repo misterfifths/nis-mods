@@ -2,8 +2,8 @@ from typing import Annotated, Final
 import ctypes as C
 from astruct import typed_struct
 from astruct.type_hints import *
-from startdatarchive import StartDatArchive
 from utils import ro_cached_property
+from .startdatarchive import StartDatArchive
 
 # TODO: enable switching between these
 PSP_FILENAME_LEN = 20
