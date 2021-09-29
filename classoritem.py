@@ -57,6 +57,10 @@ class ClassOrItem(C.Structure):
     # 21+    : S
     sp_aptitudes: CUInt8Array[7]
     _zero1: CUInt8
+
+    # Rank doesn't seem to be very meaningful for classes. For generics, the
+    # recruitment cost from Marona is 5 * (rank + 1). E.g., DungeonMonk's rank
+    # is 100, resulting in a base recruitment cost of 505 BOR.
     rank: CUInt8
     guard: CUInt16
     _unk3: CUInt8  # some sort of flag for bosses?

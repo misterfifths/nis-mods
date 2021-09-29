@@ -86,8 +86,8 @@ Note that, like in this example, the compatibility relationship is not always
 symmetrical; which is the material and which is the beneficiary matters.
 
 In the struct below, the first entry in each row is assigned to the field
-compat_category_id. The actual compatibilities are in the compat_map array,
-followed by some padding zero bytes.
+label. The actual columns in the row are in the entries array, followed by some
+padding zero bytes.
 """
 
 
@@ -95,8 +95,8 @@ followed by some padding zero bytes.
 class FusionCompatibilityRow(C.Structure):
     _pack_ = 1
 
-    compat_category_id: CUInt8
-    compat_map: CUInt8Array[26]
+    label: CUInt8
+    entries: CUInt8Array[26]
     _zero: CUInt8Array[37]
 
 
@@ -108,9 +108,9 @@ class FusionCompatibilityTable(CountedTable[FusionCompatibilityRow]):
     def __init__(self, buffer: WriteableBuffer, offset: int = 0) -> None:
         super().__init__(FusionCompatibilityRow, buffer, offset)
 
-        # TODO: list() here is working around the fact that ctypes.Arrays
-        # don't have index().
-        self._column_order = list(self[0].compat_map)
+        # list() here is working around the fact that ctypes.Arrays don't have
+        # index().
+        self._column_order = list(self[0].entries)
 
     def _column_idx_for_id(self, id: int) -> int:
         try:
@@ -120,11 +120,11 @@ class FusionCompatibilityTable(CountedTable[FusionCompatibilityRow]):
 
     def _row_for_id(self, id: int) -> FusionCompatibilityRow:
         for row in self[1:]:  # skip the header
-            if row.compat_category_id == id:
+            if row.label == id:
                 return row
 
         raise KeyError(f'Unknown fusion compatibility category ID {id}')
 
     def compatibility_for_ids(self, id_beneficiary: int, id_material: int) -> int:
         column_idx = self._column_idx_for_id(id_material)
-        return self._row_for_id(id_beneficiary).compat_map[column_idx]
+        return self._row_for_id(id_beneficiary).entries[column_idx]

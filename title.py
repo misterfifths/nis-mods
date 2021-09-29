@@ -12,7 +12,8 @@ class Rarity(enum.IntEnum):
     # from Marona.
     NORMAL = 0
 
-    # Can only be found on items in random dungeons after the given floor.
+    # Can only be found on items in random dungeons after (but not on) the
+    # given floor.
     AFTER_FLOOR_10 = 1
     AFTER_FLOOR_30 = 2
     AFTER_FLOOR_60 = 3
@@ -45,8 +46,8 @@ class Title(C.Structure):
 
     # exp_bonus and bor_bonus should be multiplied by 5% to find the actual
     # percentage. So the max is 0x7f * 5% = 635%.
-    exp_bonus: CUInt8
-    bor_bonus: CUInt8
+    exp_bonus: CInt8
+    bor_bonus: CInt8
 
     # The changes to the palette when this title is applied to a character.
     # (Unsure of the exact format.)
@@ -121,7 +122,7 @@ class TitleTable(CountedTable[Title]):
 
         raise KeyError(f'No title named "{name}"')
 
-    def category_for_id(self, id: int) -> Title:
+    def title_for_id(self, id: int) -> Title:
         for title in self:
             if title.id == id:
                 return title
