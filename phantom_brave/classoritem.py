@@ -4,6 +4,7 @@ import enum
 from astruct import typed_struct
 from astruct.type_hints import *
 from .countedtable import CountedTable
+from .fusioncompat import fusion_compat_name_for_id
 
 
 @enum.unique
@@ -118,13 +119,43 @@ class ClassOrItem(C.Structure):
     # active_skill_learn_levels list. The list is terminated with a zero.
     active_skill_ids: CUInt16Array[16]
 
-    # The level at which a character learns active skills. The oder is the
-    # same as the IDs in active_skill_ids.
+    # The level at which a character learns active skills. The order is the
+    # same as the IDs in active_skill_ids. For items, a learn level of 0 means
+    # the skill is purchaseable from a Blacksmith, but not normally unlocked.
     active_skill_learn_levels: CUInt16Array[16]
 
     # Zero for everyone but Ash and Marona
     _unk6: CUInt8Array[2]
     _zero6: CUInt8Array[2]
+
+    @property
+    def is_item(self) -> bool:
+        return self.id >= 0xf00  # no magic here, just from inspecting the existing entries
+
+    @property
+    def is_class(self) -> bool:
+        return not self.is_item
+
+    @property
+    def compat_category_name(self) -> str:
+        try:
+            return fusion_compat_name_for_id(self.compat_category)
+        except KeyError:
+            return f'(unknown: {self.compat_category})'
+
+    def index_of_passive_skill_id(self, skill_id: int) -> int:
+        for i, sid in enumerate(self.passive_skill_ids):
+            if sid == skill_id:
+                return i
+
+        raise ValueError(f'Skill id {skill_id} is not in passive skills')
+
+    def index_of_active_skill_id(self, skill_id: int) -> int:
+        for i, sid in enumerate(self.active_skill_ids):
+            if sid == skill_id:
+                return i
+
+        raise ValueError(f'Skill id {skill_id} is not in active skills')
 
 
 class ClassOrItemTable(CountedTable[ClassOrItem]):
