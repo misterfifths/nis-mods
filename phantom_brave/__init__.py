@@ -10,3 +10,4 @@ from .fusioncompat import fusion_compat_id_for_name, fusion_compat_name_for_id
 from .randomevent import RandomEvent
 from .skills import Skill
 from .title import Title, TitleStatIndex
+from .utils import *
