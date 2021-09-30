@@ -1,6 +1,6 @@
 # pyright: reportUnusedImport=none
 
-from .carray import CArray
+from .carray import CArray, CStructureArray, CUnionArray
 from .cstr import CStr
 from .metadata import CField, NotNullTerminated, Encoding, Length
 from .ctypes_helpers import *

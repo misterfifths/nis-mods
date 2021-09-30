@@ -1,13 +1,10 @@
-from typing import Annotated, Final
+from typing import Annotated, Final, Protocol, Union
 import ctypes as C
 from astruct import typed_struct
 from astruct.type_hints import *
 from utils import ro_cached_property
 from .startdatarchive import StartDatArchive
 
-# TODO: enable switching between these
-PSP_FILENAME_LEN = 20
-PC_SWITCH_FILENAME_LEN = 40
 
 # Thanks to xdanieldzd's Scarlet project for helping me work out details on the
 # PSPFS container format. See in particular:
@@ -28,12 +25,27 @@ class PSPFSHeader(C.Structure):
             raise ValueError(f'Invalid magic in PSPFS header: "{self._header.magic}"')
 
 
-@typed_struct
-class PSPFSFileEntry(C.Structure):
-    _pack_ = 1
+class PSPFSFileEntry(Protocol):
+    filename: str
+    size: int
+    offset: int
 
-    filename: CStr[PC_SWITCH_FILENAME_LEN]
-    _unk: CUInt8Array[4]  # TODO: confirm this is there on PSP
+
+@typed_struct
+class _PSPFSFileEntry_PCAndSwitch(C.Structure):
+    _pack_ = 1
+    filename: CStr[40]
+    _unk: CUInt8Array[4]
+    size: CUInt32
+    offset: CUInt32
+
+
+@typed_struct
+class _PSPFSFileEntry_PSP(C.Structure):
+    _pack_ = 1
+    filename: CStr[24]
+    # It may be that the unknown 4-byte field on PC/Switch is also present here
+    # and just always zero.
     size: CUInt32
     offset: CUInt32
 
@@ -41,18 +53,26 @@ class PSPFSFileEntry(C.Structure):
 class PSPFSArchive:
     _buffer: WriteableBuffer
     _header: PSPFSHeader
-    files: C.Array[PSPFSFileEntry]  # TODO: Type as a Sequence?
 
-    def __init__(self, buffer: WriteableBuffer) -> None:
+    files: CArray[PSPFSFileEntry, Union[_PSPFSFileEntry_PCAndSwitch, _PSPFSFileEntry_PSP]]
+
+    def __init__(self, buffer: WriteableBuffer, is_pc_or_switch: bool = True) -> None:
         self._buffer = buffer
 
         self._header = PSPFSHeader.from_buffer(self._buffer)  # type: ignore[arg-type]
         self._header.validate()
 
         file_entries_offset = C.sizeof(PSPFSHeader)
-        FileEntriesArray = PSPFSFileEntry * self._header.file_count
-        self.files = FileEntriesArray.from_buffer(self._buffer,  # type: ignore[arg-type]
-                                                  file_entries_offset)
+
+        FileEntryClass: type[PSPFSFileEntry]
+        if is_pc_or_switch:
+            FileEntryClass = _PSPFSFileEntry_PCAndSwitch
+        else:
+            FileEntryClass = _PSPFSFileEntry_PSP
+
+        FileEntriesArrayClass = FileEntryClass * self._header.file_count
+        self.files = FileEntriesArrayClass.from_buffer(self._buffer,  # type: ignore
+                                                       file_entries_offset)
 
     def find_file(self, name: str) -> PSPFSFileEntry:
         for file in self.files:
