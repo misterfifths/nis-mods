@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 from typing import ByteString, Optional
 import math
 from .decoder import iffy_decode
