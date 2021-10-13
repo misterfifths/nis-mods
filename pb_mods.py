@@ -146,6 +146,34 @@ def adjust_failure_title_bonuses(start_dat: StartDatArchive) -> None:
     failure_title.exp_bonus = failure_title.bor_bonus = 4
 
 
+def increase_bottlemail_steal(start_dat: StartDatArchive) -> None:
+    print('\n>> Increasing Bottlemail\'s STEAL stat...')
+
+    bmail = start_dat.classtab.entry_for_class_name('Bottlemail')
+    bmail.steal = 100
+
+
+def make_thief_title(start_dat: StartDatArchive) -> None:
+    print('\n>>> Making Thief title...')
+
+    donor = start_dat.titletab.title_for_name('DieNow')
+
+    print(f'(overwriting donor title "{donor.name}")')
+    donor.name = 'Thief'
+
+    # These are a modified version of Techno (still summing to 150)
+    donor.stat_bonuses[TitleStatIndex.HP]  = 100 + 20
+    donor.stat_bonuses[TitleStatIndex.ATK] = 100 + 20
+    donor.stat_bonuses[TitleStatIndex.DEF] = 100 + 30
+    donor.stat_bonuses[TitleStatIndex.INT] = 100 +  0
+    donor.stat_bonuses[TitleStatIndex.RES] = 100 + 30
+    donor.stat_bonuses[TitleStatIndex.SPD] = 100 + 50
+
+    # The enemy-only Robber title's values for these:
+    donor.steal = 120
+    donor.move = 20
+
+
 def apply_patches(arch: PSPFSArchive) -> None:
     start_dat = arch.start_dat
 
@@ -166,6 +194,10 @@ def apply_patches(arch: PSPFSArchive) -> None:
 
     adjust_failure_title_bonuses(start_dat)
 
+    increase_bottlemail_steal(start_dat)
+
+    make_thief_title(start_dat)
+
 
 def patch_file(src: Path, dest: Path, is_pc_or_switch: bool) -> None:
     fd = None
@@ -176,6 +208,7 @@ def patch_file(src: Path, dest: Path, is_pc_or_switch: bool) -> None:
             apply_patches(arch)
             del arch  # avoiding a BufferError by triggering collection of this
 
+            print(f'\n>> Writing output to {dest}...')
             with dest.open('wb') as output:
                 output.write(mm)  # type: ignore[arg-type]
     finally:
