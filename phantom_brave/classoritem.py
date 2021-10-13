@@ -143,6 +143,26 @@ class ClassOrItem(C.Structure):
         except KeyError:
             return f'(unknown: {self.compat_category})'
 
+    def _get_free_skill_index(self, passive: bool) -> int:
+        ids = self.passive_skill_levels if passive else self.active_skill_ids
+        for i, id in enumerate(ids):
+            if id == 0:
+                return i
+
+        if passive:
+            raise IndexError('No room to add a passive skill')
+        raise IndexError('No room to add an active skill')
+
+    def add_passive_skill_id(self, skill_id: int, level: int) -> None:
+        free_idx = self._get_free_skill_index(passive=True)
+        self.passive_skill_ids[free_idx] = skill_id
+        self.passive_skill_levels[free_idx] = level
+
+    def add_active_skill_id(self, skill_id: int, learn_level: int) -> None:
+        free_idx = self._get_free_skill_index(passive=False)
+        self.active_skill_ids[free_idx] = skill_id
+        self.active_skill_learn_levels[free_idx] = learn_level
+
     def index_of_passive_skill_id(self, skill_id: int) -> int:
         for i, sid in enumerate(self.passive_skill_ids):
             if sid == skill_id:
@@ -156,6 +176,9 @@ class ClassOrItem(C.Structure):
                 return i
 
         raise ValueError(f'Skill id {skill_id} is not in active skills')
+
+    def has_skill_id(self, skill_id: int) -> bool:
+        return skill_id in self.passive_skill_ids or skill_id in self.active_skill_ids
 
 
 class ClassOrItemTable(CountedTable[ClassOrItem]):
