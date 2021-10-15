@@ -1,5 +1,6 @@
-from typing import Sequence, Union, TYPE_CHECKING
 import ctypes as C
+from typing import TYPE_CHECKING, Sequence, Union
+
 from .ctypes_aliases import AnyCType
 
 if TYPE_CHECKING:

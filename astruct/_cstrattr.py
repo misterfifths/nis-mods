@@ -1,16 +1,16 @@
-from typing import Any, ClassVar, Optional
-import typing
-import ctypes as C
 import codecs
+import ctypes as C
+import typing
 from dataclasses import dataclass
-from ._type_hint_utils import hint_is_specialized, first_annotated_md_of_type
+from typing import Any, ClassVar, Optional
+
+from ._type_hint_utils import first_annotated_md_of_type, hint_is_specialized
 from .ctypes_utils import get_bytes_for_field, set_bytes_for_field
-from .str_utils import (NullTerminationError, get_incremental_decoder, encode_null_terminated,
-                        decode_null_terminated)
+from .str_utils import (NullTerminationError, decode_null_terminated, encode_null_terminated,
+                        get_incremental_decoder)
+from .type_hints.cstr import CStr
 from .type_hints.extras import CStructureOrUnion
 from .type_hints.metadata import DoNotZeroExtraBytes, Encoding, NotNullTerminated
-from .type_hints.cstr import CStr
-
 
 """
 Arrays of c_char and c_wchar do some very strange things when it come to null-

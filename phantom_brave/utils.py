@@ -1,6 +1,6 @@
-from .startdatarchive import StartDatArchive
-from .dungeoncategory import DungeonCategory, CategoryMemberKind
 from .classoritem import ClassOrItem
+from .dungeoncategory import CategoryMemberKind, DungeonCategory
+from .startdatarchive import StartDatArchive
 
 __all__ = ['dump_category', 'dump_categories', 'dump_orphaned_items', 'dump_class_skills',
            'dump_all_class_skills']

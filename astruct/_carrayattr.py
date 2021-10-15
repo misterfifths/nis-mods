@@ -1,10 +1,11 @@
-from typing import Annotated, Any, Optional
 import typing
 from dataclasses import dataclass
-from ._type_hint_utils import hint_is_specialized, first_annotated_md_of_type, issubclass_static
-from .type_hints.metadata import Length
+from typing import Annotated, Any, Optional
+
+from ._type_hint_utils import first_annotated_md_of_type, hint_is_specialized, issubclass_static
 from .type_hints.carray import CArray, CStructureArray
 from .type_hints.ctypes_aliases import AnyCType, is_ctype_subclass
+from .type_hints.metadata import Length
 
 
 @dataclass

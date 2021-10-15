@@ -1,5 +1,5 @@
-from typing import Annotated, Any, Optional, TypeVar
 import typing
+from typing import Annotated, Any, Optional, TypeVar
 
 _T = TypeVar('_T')
 

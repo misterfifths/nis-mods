@@ -1,8 +1,10 @@
-from typing import Final, Iterable
 import ctypes as C
 import enum
+from typing import Final, Iterable
+
 from astruct import typed_struct
 from astruct.type_hints import *
+
 from .countedtable import CountedTable
 
 

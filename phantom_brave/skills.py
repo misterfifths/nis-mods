@@ -1,7 +1,9 @@
-from typing import Annotated, Final
 import ctypes as C
+from typing import Annotated, Final
+
 from astruct import typed_struct
 from astruct.type_hints import *
+
 from .countedtable import CountedTable
 
 

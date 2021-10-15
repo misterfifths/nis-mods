@@ -1,10 +1,11 @@
-from typing import Annotated, Final, Protocol, Union
 import ctypes as C
+from typing import Annotated, Final, Protocol, Union
+
 from astruct import typed_struct
 from astruct.type_hints import *
 from utils import ro_cached_property
-from .startdatarchive import StartDatArchive
 
+from .startdatarchive import StartDatArchive
 
 # Thanks to xdanieldzd's Scarlet project for helping me work out details on the
 # PSPFS container format. See in particular:

@@ -1,5 +1,6 @@
-from typing import Any, Optional
 from dataclasses import dataclass
+from typing import Any, Optional
+
 from ._type_hint_utils import first_annotated_md_of_type
 from .type_hints.metadata import CField
 

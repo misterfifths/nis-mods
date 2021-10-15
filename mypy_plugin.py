@@ -1,9 +1,11 @@
-from typing import Any, Final, Optional, Callable
+from typing import Any, Callable, Final, Optional
 
-from mypy.nodes import SymbolTableNode, Var
-from mypy.plugin import ClassDefContext, Plugin, AnalyzeTypeContext
-from mypy.types import Instance, RawExpressionType, Type as MyPyType, UnboundType
 from mypy.errorcodes import TYPE_ARG, VALID_TYPE
+from mypy.nodes import SymbolTableNode, Var
+from mypy.plugin import AnalyzeTypeContext, ClassDefContext, Plugin
+from mypy.types import Instance, RawExpressionType
+from mypy.types import Type as MyPyType
+from mypy.types import UnboundType
 
 import astruct
 from astruct.type_hints import CStr, CUInt8Array

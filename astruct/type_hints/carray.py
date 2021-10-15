@@ -1,8 +1,9 @@
 # pyright: reportUnusedClass=none
 
-from typing import ClassVar, Iterable, Iterator, Protocol, TypeVar, overload
-from abc import abstractmethod
 import ctypes as C
+from abc import abstractmethod
+from typing import ClassVar, Iterable, Iterator, Protocol, TypeVar, overload
+
 from .ctypes_aliases import AnyCType
 
 _T = TypeVar('_T')

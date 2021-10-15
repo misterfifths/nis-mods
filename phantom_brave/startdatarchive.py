@@ -1,17 +1,18 @@
-from typing import Final, Sequence, TypeVar
 import ctypes as C
 import os
+from typing import Final, Sequence, TypeVar
+
 from astruct import typed_struct
 from astruct.type_hints import *
 from utils import ro_cached_property
-from .countedtable import CountedTable
 
-from .skills import SkillTable
-from .dungeoncategory import DungeonCategoryTable
 from .classoritem import ClassOrItemTable
+from .countedtable import CountedTable
+from .dungeoncategory import DungeonCategoryTable
 from .fusioncompat import FusionCompatibilityTable
-from .title import TitleTable
 from .randomevent import RandomEventTable
+from .skills import SkillTable
+from .title import TitleTable
 
 E = TypeVar('E', bound=AnyCType)
 

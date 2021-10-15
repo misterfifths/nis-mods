@@ -1,14 +1,14 @@
 # pyright: reportPrivateUsage=none
 
-from typing import ClassVar, Final, Generic, Any, TypeVar
-import typing
 import ctypes as C
-from ._type_hint_utils import hint_is_specialized
-from .type_hints.extras import CStructureOrUnion, CStructureField
-from ._cstrattr import CStrAttr
+import typing
+from typing import Any, ClassVar, Final, Generic, TypeVar
+
 from ._carrayattr import CArrayAttr
 from ._cfieldattr import CFieldAttr
-
+from ._cstrattr import CStrAttr
+from ._type_hint_utils import hint_is_specialized
+from .type_hints.extras import CStructureField, CStructureOrUnion
 
 _CSU = TypeVar('_CSU', bound=CStructureOrUnion)
 

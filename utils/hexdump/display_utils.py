@@ -1,6 +1,6 @@
 from typing import Final
-from wcwidth import wcswidth, wcwidth  # type: ignore[import]
 
+from wcwidth import wcswidth, wcwidth  # type: ignore[import]
 
 COMBINER_ISOLATION_CHAR: Final = '◌'
 NONPRINTABLE_REPLACEMENT_CHAR: Final = '.'

@@ -1,11 +1,12 @@
-from typing import Iterable
 import inspect
-from astruct.type_hints import *
+from typing import Iterable
+
 from astruct._cstrattr import CStrAttr
 from astruct.ctypes_utils import get_bytes_for_field
 from astruct.str_utils import NullTerminationError, decode_null_terminated, get_incremental_decoder
-from .hexdump import hexdump
+from astruct.type_hints import *
 
+from .hexdump import hexdump
 
 __all__ = ['all_zero', 'unkdump', 'check_zero_fields', 'iter_cstr_fields',
            'check_null_terminated_strs']

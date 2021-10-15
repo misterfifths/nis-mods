@@ -1,9 +1,9 @@
-from typing import Final, Optional, ByteString
 import codecs
 import unicodedata
-from .byte_utils import hexlify
-from .display_utils import safe_2_cell_str, NONPRINTABLE_REPLACEMENT_CHAR
+from typing import ByteString, Final, Optional
 
+from .byte_utils import hexlify
+from .display_utils import NONPRINTABLE_REPLACEMENT_CHAR, safe_2_cell_str
 
 BYTE_CONTINUATION_CHAR: Final = '⋯'
 

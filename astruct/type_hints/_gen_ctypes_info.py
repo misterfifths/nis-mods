@@ -2,12 +2,12 @@
 
 # pyright: reportPrivateUsage=none
 
-from typing import Iterable, Optional
 import ctypes as C
-import textwrap
 import inspect
-from sys import stderr
+import textwrap
 from io import StringIO
+from sys import stderr
+from typing import Iterable, Optional
 
 """
 This script walks the ctypes module and generates two files:

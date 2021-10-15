@@ -1,6 +1,6 @@
-from typing import Any, Optional
 import typing
 from types import GenericAlias
+from typing import Any, Optional
 
 """
 We want to be able to type-hint fixed-length C strings on classes like this:

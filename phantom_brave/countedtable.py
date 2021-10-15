@@ -1,5 +1,6 @@
-from typing import Sequence, TypeVar, Iterator, Union, overload
 import ctypes as C
+from typing import Iterator, Sequence, TypeVar, Union, overload
+
 from astruct import typed_struct
 from astruct.type_hints import *
 

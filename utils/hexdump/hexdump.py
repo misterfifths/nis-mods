@@ -1,5 +1,6 @@
-from typing import ByteString, Optional
 import math
+from typing import ByteString, Optional
+
 from .decoder import iffy_decode
 from .display_utils import safe_2_cell_str
 

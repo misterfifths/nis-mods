@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 
+import mmap
 import os
 import sys
-import mmap
 from pathlib import Path
+
 from phantom_brave import *
 
 
