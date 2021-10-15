@@ -1,0 +1,55 @@
+[tool.poetry]
+name = "nis-mods"
+version = "0.1.0"
+description = ""
+authors = ["Tim Clem <tim.clem@gmail.com>"]
+packages = [
+    { include = "astruct" },
+    { include = "phantom_brave" },
+    { include = "utils" }
+]
+
+[tool.poetry.dependencies]
+python = "^3.9"
+wcwidth = "^0.2.5"
+ipython = {version = "^7.28.0", optional = true}
+
+[tool.poetry.dev-dependencies]
+mypy = "^0.910"
+flake8 = "^4.0.1"
+
+[tool.poetry.extras]
+ipython = ["ipython"]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+
+[tool.pyright]
+strict = ["**/*.py"]
+ignore = ["mypy_plugin.py", "scratch/**/*.py"]
+
+
+[tool.mypy]
+disallow_untyped_defs = true
+disallow_incomplete_defs = true
+check_untyped_defs = true
+# warn_unused_ignores = true
+warn_unreachable = true
+show_error_codes = true
+
+disallow_any_generics = true
+disallow_subclassing_any = true
+disallow_untyped_calls = true
+disallow_untyped_decorators = true
+no_implicit_optional = true
+warn_redundant_casts = true
+# warn_return_any = true
+# no_implicit_reexport = true
+strict_equality = true
+
+mypy_path = "$MYPY_CONFIG_FILE_DIR"
+plugins = "mypy_plugin.py"
+files = ["*.py", "astruct/**/*.py", "phantom_brave/**/*.py", "utils/**/*.py"]
+
