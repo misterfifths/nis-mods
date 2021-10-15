@@ -23,7 +23,7 @@ class PSPFSHeader(C.Structure):
 
     def validate(self) -> None:
         if self.magic != self.MAGIC:
-            raise ValueError(f'Invalid magic in PSPFS header: "{self._header.magic}"')
+            raise ValueError(f'Invalid magic in PSPFS header: "{self.magic}"')
 
 
 class PSPFSFileEntry(Protocol):
