@@ -259,31 +259,31 @@ def generate_aliases_file() -> str:
     fprint(format_type_set('CHAR_CTYPES', char_type_names))
 
     fprint()
-    fprint(fixup_multiline_str(f'''
+    fprint(fixup_multiline_str('''
         def is_builtin_ctype(t: type) -> bool:
             return t in ALL_CTYPES
     '''))
 
     fprint()
-    fprint(fixup_multiline_str(f'''
+    fprint(fixup_multiline_str('''
         def is_int_ctype(t: type) -> bool:
             return t in INT_CTYPES
     '''))
 
     fprint()
-    fprint(fixup_multiline_str(f'''
+    fprint(fixup_multiline_str('''
         def is_float_ctype(t: type) -> bool:
             return t in FLOAT_CTYPES
     '''))
 
     fprint()
-    fprint(fixup_multiline_str(f'''
+    fprint(fixup_multiline_str('''
         def is_char_ctype(t: type) -> bool:
             return t in CHAR_CTYPES
     '''))
 
     fprint()
-    fprint(fixup_multiline_str(f'''
+    fprint(fixup_multiline_str('''
         def is_ctype_subclass(t: type) -> bool:
             if is_builtin_ctype(t):
                 return True

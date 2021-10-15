@@ -8,17 +8,17 @@ from .countedtable import CountedTable
 # Couldn't find an in-game source of these names; these are taken from the
 # strategy guide.
 FUSION_COMPAT_CATEGORY_NAMES = {
-    0:  '(special)',
+    0: '(special)',
 
-    1:  'Warrior',
-    2:  'Magic',
-    3:  'Support',
-    4:  'Nature',
-    5:  'Normal',
-    6:  'BeastMan',
-    7:  'Beast',
-    8:  'Slime',
-    9:  'Fairy',
+    1: 'Warrior',
+    2: 'Magic',
+    3: 'Support',
+    4: 'Nature',
+    5: 'Normal',
+    6: 'BeastMan',
+    7: 'Beast',
+    8: 'Slime',
+    9: 'Fairy',
     10: 'Spirit',
     11: 'Dragon',
 

@@ -68,10 +68,12 @@ class CountedTable(Sequence[E]):
         return x in self._entries  # type: ignore[operator]
 
     @overload
-    def __getitem__(self, idx: int) -> E: ...
+    def __getitem__(self, idx: int) -> E:
+        ...
 
     @overload
-    def __getitem__(self, idx: slice) -> Sequence[E]: ...
+    def __getitem__(self, idx: slice) -> Sequence[E]:
+        ...
 
     def __getitem__(self, idx: Union[slice, int]) -> Union[Sequence[E], E]:  # type: ignore
         return self._entries.__getitem__(idx)

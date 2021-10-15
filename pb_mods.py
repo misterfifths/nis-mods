@@ -72,7 +72,7 @@ def create_rarity_category(start_dat: StartDatArchive) -> None:
     for cat_name, item_class_name in items_to_move:
         _add_item_to_category(cat_name, item_class_name, start_dat)
 
-    print(f'(configuring new category)')
+    print('(configuring new category)')
 
     cat.name = 'Rarity'
     cat.monk_level_req = 75
@@ -162,10 +162,10 @@ def make_thief_title(start_dat: StartDatArchive) -> None:
     donor.name = 'Thief'
 
     # These are a modified version of Techno (still summing to 150)
-    donor.stat_bonuses[TitleStatIndex.HP]  = 100 + 20
+    donor.stat_bonuses[TitleStatIndex.HP] = 100 + 20
     donor.stat_bonuses[TitleStatIndex.ATK] = 100 + 20
     donor.stat_bonuses[TitleStatIndex.DEF] = 100 + 30
-    donor.stat_bonuses[TitleStatIndex.INT] = 100 +  0
+    donor.stat_bonuses[TitleStatIndex.INT] = 100 + 0
     donor.stat_bonuses[TitleStatIndex.RES] = 100 + 30
     donor.stat_bonuses[TitleStatIndex.SPD] = 100 + 50
 
