@@ -4,10 +4,9 @@ from typing import Final, Sequence, TypeVar
 
 from astruct import typed_struct
 from astruct.type_hints import *
-from utils import ro_cached_property
+from utils import CountedTable, ro_cached_property
 
 from .classoritem import ClassOrItemTable
-from .countedtable import CountedTable
 from .dungeoncategory import DungeonCategoryTable
 from .fusioncompat import FusionCompatibilityTable
 from .randomevent import RandomEventTable

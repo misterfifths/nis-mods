@@ -4,8 +4,8 @@ from typing import Final
 
 from astruct import typed_struct
 from astruct.type_hints import *
+from utils import CountedTable
 
-from .countedtable import CountedTable
 from .fusioncompat import fusion_compat_name_for_id
 
 

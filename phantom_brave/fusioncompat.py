@@ -3,8 +3,7 @@ from typing import Final
 
 from astruct import typed_struct
 from astruct.type_hints import *
-
-from .countedtable import CountedTable
+from utils import CountedTable
 
 # Couldn't find an in-game source of these names; these are taken from the
 # strategy guide.

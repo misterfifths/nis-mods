@@ -1,7 +1,6 @@
 # pyright: reportUnusedImport=none
 
 from .classoritem import ClassOrItem, ClassStatIndex, SPTypeIndex
-from .countedtable import CountedTable
 from .dungeoncategory import CategoryMemberKind, DungeonCategory
 from .fusioncompat import fusion_compat_id_for_name, fusion_compat_name_for_id
 from .pspfsarchive import PSPFSArchive
