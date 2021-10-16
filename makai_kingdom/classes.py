@@ -43,7 +43,11 @@ class Class(C.Structure):
     description: CStr[58]
     type: CUInt8  # One of the ClassType enumeration values
     _unk1: CUInt8Array[2]
-    rank: CUInt8  # For generics, the rank within their class (starting at 0)
+
+    # For generic characters, the rank within their class (starting at 0). With
+    # only a few exceptions, this is otherwise zero.
+    rank: CUInt8
+
     vehicle_flag: CUInt8  # 2 for all vehicles, otherwise zero
     jump: CUInt8
     building_flag: CUInt8  # 2 for all buildings, otherwise 1
