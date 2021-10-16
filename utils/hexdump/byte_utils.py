@@ -1,7 +1,7 @@
 from typing import ByteString, Iterable, Union
 
 
-def hexlify(bs: Union[ByteString, Iterable[int]]) -> str:
+def hexlify(bs: Union[ByteString, Iterable[int], int]) -> str:
     """Converts each byte in the argument into the corresponding 2-digit hex
     representation, and returns them all joined with spaces.
 
@@ -9,7 +9,10 @@ def hexlify(bs: Union[ByteString, Iterable[int]]) -> str:
     and 255. If one is outside of that range, its corresponding substring in
     the return may be longer than 2 hexadecimal digits.
     """
-    return ' '.join(format(b, '02x') for b in bs)
+    if isinstance(bs, int):
+        return f'{bs:02x}'
+
+    return ' '.join(f'{b:02x}' for b in bs)
 
 
 def build_bytes(*parts: Union[str, bytes, int, Iterable[int]],
