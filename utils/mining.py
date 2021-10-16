@@ -17,7 +17,7 @@ def all_zero(xs: Iterable[int]) -> bool:
     return all(x == 0 for x in xs)
 
 
-def unkdump(s: CStructureOrUnion, encoding: str = 'shift-jis') -> None:
+def unkdump(s: CStructureOrUnion, encoding: str = 'shift-jis', decimal: bool = False) -> None:
     """Hexdumps all the fields of the given ctypes Structure whose names begin
     with '_unk'.
 
@@ -31,7 +31,7 @@ def unkdump(s: CStructureOrUnion, encoding: str = 'shift-jis') -> None:
 
         bs = get_bytes_for_field(s, name)
         print(f'==> {name}')
-        hexdump(bs, encoding=encoding)
+        hexdump(bs, encoding=encoding, decimal=decimal)
 
 
 def check_zero_fields(s: CStructureOrUnion, encoding: str = 'shift-jis') -> None:
