@@ -7,6 +7,7 @@ from astruct.type_hints import *
 from utils import CountedTable, ro_cached_property
 
 from .classes import ClassTable
+from .items import ItemTable
 from .skills import SkillTable
 from .wish import WishTable
 
@@ -81,6 +82,11 @@ class StartDatArchive:
     def classtab(self) -> ClassTable:
         file_entry = self.find_file(ClassTable.STANDARD_FILENAME)
         return ClassTable(self._buffer, file_entry.offset)
+
+    @ro_cached_property
+    def itemtab(self) -> ItemTable:
+        file_entry = self.find_file(ItemTable.STANDARD_FILENAME)
+        return ItemTable(self._buffer, file_entry.offset)
 
     @ro_cached_property
     def skilltab(self) -> SkillTable:
