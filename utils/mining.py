@@ -1,5 +1,6 @@
 import inspect
-from typing import Iterable
+from collections import defaultdict
+from typing import Callable, Iterable, TypeVar
 
 from astruct._cstrattr import CStrAttr
 from astruct.ctypes_utils import get_bytes_for_field
@@ -10,6 +11,9 @@ from .hexdump import hexdump
 
 __all__ = ['all_zero', 'unkdump', 'check_zero_fields', 'iter_cstr_fields',
            'check_null_terminated_strs']
+
+T = TypeVar('T', bound=CStructureOrUnion)
+K = TypeVar('K')
 
 
 def all_zero(xs: Iterable[int]) -> bool:
@@ -91,3 +95,32 @@ def check_null_terminated_strs(s: CStructureOrUnion, check_zeroes_after_null: bo
             if not all_zero(bytes_after_null):
                 print(f'String field {name} has non-zero bytes after null')
                 hexdump(bs, encoding=cstrattr.encoding)
+
+
+def group_and_dump(objects: Iterable[T],
+                   key: Callable[[T], K],
+                   only_show_non_unique: bool = False,
+                   strify_obj: Callable[[T], str] = repr,
+                   strify_key: Callable[[K], str] = repr) -> None:
+    """Groups objects by the given key and prints a description of each group.
+
+    The given strify functions will be used to generate string versions of the
+    objects and keys, respectively. If only_show_non_unique is True, only keys
+    with more than one corresponding object will be printed.
+    """
+    objs_by_key: defaultdict[K, list[T]] = defaultdict(list)
+    for obj in objects:
+        objs_by_key[key(obj)].append(obj)
+
+    first = True
+    for k, objs in objs_by_key.items():
+        if only_show_non_unique and len(objs) == 1:
+            continue
+
+        if not first:
+            print()
+        first = False
+
+        print(f'Value {strify_key(k)} - {len(objs)} objects:')
+        for obj in objs:
+            print(f'  {strify_obj(obj)}')
