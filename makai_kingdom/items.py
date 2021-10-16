@@ -4,7 +4,9 @@ from typing import Final
 
 from astruct import typed_struct
 from astruct.type_hints import *
-from utils import CountedTable
+from utils import CountedTable, ro_cached_property
+
+from .item_categories import ItemCategory, ItemKind
 
 
 @enum.unique
@@ -44,7 +46,8 @@ class Item(C.Structure):
 
     # All "environmental objects" (rocks, trees, flowers, etc.) have the same
     # category ID (0). Aside from that, each type of weapon/armor/vehicle
-    # equipment/food/etc. has its own category id.
+    # equipment/food/etc. has its own category id. The category property looks
+    # this id up and returns a more useful ItemCategory object.
     category_id: CUInt8
 
     _unk3: CUInt8Array[4]
@@ -70,17 +73,29 @@ class Item(C.Structure):
     status_res_types: CUInt16Array[2]
     status_res_amounts: CInt16Array[2]
 
-    # Active skills on weapons are learned at particular levels of your mastery
-    # with that weapon type. The mastery level needed for each skill is in the
-    # corresponding index of active_skill_mastery_levels. The list is
-    # terminated by a zero.
+    # Active skills that are granted by equipping this item. Active skills on
+    # weapons are learned at particular levels of your mastery with that weapon
+    # type. That data is not stored in this structure; it's in the
+    # mastery_level field on the skill itself.
     active_skill_ids: CUInt16Array[12]
-    active_skill_mastery_levels: CUInt16Array[12]
+
+    # It seems like maybe they were going to include the mastery levels on this
+    # struct in this array, but instead it only ever has 1s in it. So as far as
+    # I can tell, this array is useless.
+    _active_skill_ones: CUInt16Array[12]
 
     _zero: CUInt8Array[2]
 
     hl_cost: CUInt32
     mt_cost: CUInt32
+
+    @ro_cached_property
+    def category(self) -> ItemCategory:
+        return ItemCategory.category_for_id(self.category_id)
+
+    @property
+    def kind(self) -> ItemKind:
+        return self.category.kind
 
 
 class ItemTable(CountedTable[Item]):

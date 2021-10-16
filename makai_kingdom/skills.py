@@ -10,9 +10,15 @@ from utils import CountedTable
 class Skill(C.Structure):
     _pack_ = 1
 
-    _unk1: CUInt8Array[4]
+    # For weapon skills, this is the mastery level needed in that weapon in
+    # order to unlock the skill. It's 0 for weapon skills for which you don't
+    # need any mastery (e.g. Sniper Edge on daggers). It's 0 for all non-weapon
+    # skills (they're either available from the start on non-weapon items, like
+    # Armor Press, or assigned a learn level on the class that learns them).
+    mastery_level: CUInt16
+    _zero: CUInt8Array[2]
     id: CUInt16
-    _unk2: CUInt8Array[2]
+    _unk1: CUInt8Array[2]
     sp_cost: CUInt32
     name: CStr[22]
 
@@ -21,7 +27,7 @@ class Skill(C.Structure):
     # we're using this error handler to round-trip them more nicely.
     description: Annotated[CStr[56], Encoding(errors='backslashreplace')]
 
-    _unk3: CUInt8Array[22]
+    _unk2: CUInt8Array[22]
 
 
 class SkillTable(CountedTable[Skill]):
