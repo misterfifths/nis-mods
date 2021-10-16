@@ -9,8 +9,8 @@ from utils import CountedTable
 
 @enum.unique
 class ClassType(enum.IntEnum):
-    BUILDING_VEHICLE_OR_MALE_BOSS = 1
-    FEMALE_BOSS = 2
+    BUILDING_VEHICLE_OR_UNIQUE_MALE = 1
+    UNIQUE_FEMALE = 2
     GENERIC_MALE = 11
     GENERIC_FEMALE = 12
 
@@ -41,12 +41,12 @@ class Class(C.Structure):
 
     # Note that Asagi's description is misaligned in the translation by default
     description: CStr[58]
-    type: CUInt8  # One of the CharacterType enumeration values
+    type: CUInt8  # One of the ClassType enumeration values
     _unk1: CUInt8Array[2]
     rank: CUInt8  # For generics, the rank within their class (starting at 0)
     vehicle_flag: CUInt8  # 2 for all vehicles, otherwise zero
     jump: CUInt8
-    building_flag: CUInt8  # 2 for all buildings, otherwise zero
+    building_flag: CUInt8  # 2 for all buildings, otherwise 1
     aptitudes: CUInt8Array[7]  # In the order of the StatIndex enumeration
     _unk2: CUInt8Array[11]
 
@@ -58,11 +58,24 @@ class Class(C.Structure):
     character_slots: CUInt8
     total_slots: CUInt8
 
-    _unk3: CUInt8Array[10]
+    _unk3: CUInt8Array[2]
+    id: CUInt16
+
+    # If the appearance of this class is based off another, the other class's
+    # id is given here. For example, all higher ranks of a class point back to
+    # the id of the lowest rank in that class. Uniques with the appearance of
+    # another class will point to that here as well (e.g., Raiden points to
+    # the lowest rank Thunder God). Uniques with a unique appearance will point
+    # to their own id. I don't understand how buildings work; they seem to have
+    # their own values for this field that aren't ids of a class at all.
+    visual_id: CUInt16
+
+    _unk4: CUInt8Array[4]
     throw: CUInt16
     growth_rates: CUInt16Array[7]  # In the order of the StatIndex enumeration
 
-    _unk4: CUInt16Array[2]
+    _zero: CUInt8Array[2]
+    _five: CUInt16  # constant 5?
     move: CUInt16
     _unk5: CUInt16Array[2]
     hl_bonus: CUInt16
@@ -112,7 +125,7 @@ class Class(C.Structure):
     @property
     def is_male(self) -> bool:
         return self.is_character and \
-            self.type in (ClassType.GENERIC_MALE, ClassType.BUILDING_VEHICLE_OR_MALE_BOSS)
+            self.type in (ClassType.GENERIC_MALE, ClassType.BUILDING_VEHICLE_OR_UNIQUE_MALE)
 
     @property
     def is_female(self) -> bool:
@@ -132,4 +145,9 @@ class ClassTable(CountedTable[Class]):
 
         raise KeyError(f'No class or item with the class_name "{class_name}"')
 
-    # TODO: find the id field, add class_for_id
+    def class_for_id(self, id: int) -> Class:
+        for cls in self:
+            if cls.id == id:
+                return cls
+
+        raise KeyError(f'No class with the id {id:#x}')

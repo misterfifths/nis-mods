@@ -6,7 +6,7 @@ from .startdatarchive import StartDatArchive
 
 
 def dump_class_skills(cls: Class, start_dat: StartDatArchive) -> None:
-    print(f'{cls.class_name} / {cls.name}')
+    print(f'{cls.id:04x} {cls.class_name} / {cls.name}')
 
     for i, skill_id in enumerate(cls.passive_skill_ids):
         if skill_id == 0:
