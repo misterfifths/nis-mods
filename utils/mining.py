@@ -50,7 +50,6 @@ def check_zero_fields(s: CStructureOrUnion, encoding: str = 'shift-jis') -> None
         if not all_zero(bs):
             print(f'Field {name} is not all zeroes!')
             hexdump(bs, encoding=encoding)
-            break
 
 
 def iter_cstr_fields(s: CStructureOrUnion) -> Iterable[tuple[str, CStrAttr]]:
