@@ -51,6 +51,7 @@ def hexdump(bs: ByteString, *,
     # How many hex bytes do we need to display the max address?
     addr_len = math.ceil(math.log(offset + count, 16))
     addr_len += addr_len & 1  # round to even
+    addr_len = max(2, addr_len)  # in case of only 1 byte
 
     byte_format = '03' if decimal else '02x'
     byte_width = 3 if decimal else 2
