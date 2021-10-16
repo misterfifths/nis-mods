@@ -6,6 +6,7 @@ authors = ["Tim Clem <tim.clem@gmail.com>"]
 packages = [
     { include = "astruct" },
     { include = "phantom_brave" },
+    { include = "makai_kingdom" },
     { include = "utils" }
 ]
 
@@ -53,12 +54,12 @@ strict_equality = true
 
 mypy_path = "$MYPY_CONFIG_FILE_DIR"
 plugins = "mypy_plugin.py"
-files = ["*.py", "astruct/**/*.py", "phantom_brave/**/*.py", "utils/**/*.py"]
+files = ["*.py", "astruct/**/*.py", "phantom_brave/**/*.py", "makai_kingdom/**/*.py", "utils/**/*.py"]
 
 
 [tool.isort]
 skip_gitignore = true
-src_paths = ["*.py", "astruct/**/*.py", "phantom_brave/**/*.py", "utils/**/*.py"]
+src_paths = ["*.py", "astruct/**/*.py", "phantom_brave/**/*.py", "makai_kingdom/**/*.py", "utils/**/*.py"]
 line_length = 100
 known_third_party = ["mypy", "wcwidth"]
-known_first_party = ["utils", "astruct", "phantom_brave"]
+known_first_party = ["utils", "astruct", "phantom_brave", "makai_kingdom"]
