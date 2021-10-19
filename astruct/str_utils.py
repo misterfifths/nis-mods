@@ -1,4 +1,5 @@
 import codecs
+from typing import ByteString
 
 
 class NullTerminationError(ValueError):
@@ -13,8 +14,9 @@ def get_incremental_decoder(encoding: str, errors: str = 'strict') -> codecs.Inc
     return codecs.getincrementaldecoder(encoding)(errors)
 
 
-def decode_null_terminated(bs: bytes,
+def decode_null_terminated(bs: ByteString,
                            decoder: codecs.IncrementalDecoder,
+                           offset: int = 0,
                            ignore_missing: bool = False) -> tuple[str, int]:
     """Decodes up to the first null character in the given bytes and
     returns the resulting string (without the null) and the number of bytes
@@ -31,9 +33,9 @@ def decode_null_terminated(bs: bytes,
     one_byte = bytearray(1)  # avoiding some churn
 
     decoder.reset()
-    for i, b in enumerate(bs):
+    for i in range(offset, len(bs)):
         final = i == len(bs) - 1
-        one_byte[0] = b
+        one_byte[0] = bs[i]
 
         # decode() returns '' if the input was ok but incomplete, a character
         # if it has decoded something, or raises an error if the byte moved us

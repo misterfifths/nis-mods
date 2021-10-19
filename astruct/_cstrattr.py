@@ -119,7 +119,9 @@ class CStrAttr:
         if self.null_terminated:
             assert self._incremental_decoder
             ignore_missing_nulls = self.errors != 'strict'
-            s, _ = decode_null_terminated(bs, self._incremental_decoder, ignore_missing_nulls)
+            s, _ = decode_null_terminated(bs,
+                                          self._incremental_decoder,
+                                          ignore_missing=ignore_missing_nulls)
             return s
 
         return bs.decode(self.encoding, self.errors)
