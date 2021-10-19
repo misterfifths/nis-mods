@@ -48,14 +48,21 @@ class YKCMPArchive:
         self._header.validate()
 
         self._data_start = offset + C.sizeof(YKCMPHeader)
-        self._data_end = self._data_start + self._header.compressed_size
+        self._data_end = offset + self._header.compressed_size
+
+        if self._data_end > len(self._buffer):
+            raise IndexError('Archive says its compressed data extends past end of buffer: '
+                             f'offset {offset:x} and compressed size '
+                             f'{self._header.compressed_size:x} puts end of data at byte '
+                             f'{self._data_end:x}, but buffer is only {len(self._buffer):x} '
+                             'bytes long')
 
     def _read_byte(self, p: int) -> int:
         """Read one byte from the input buffer at index p.
 
         Raises a helpful IndexError on bounds issues.
         """
-        if p < self._data_start or p > self._data_end:
+        if p < self._data_start or p >= self._data_end:
             raise IndexError(f'Out of range read during decompression: {p:x} not in '
                              f'{self._data_start:x} - {self._data_end:x}')
 
@@ -93,7 +100,7 @@ class YKCMPArchive:
         ip = self._data_start
         op = 0
 
-        while ip <= self._data_end:
+        while ip < self._data_end:
             b1 = self._read_byte(ip)
 
             # Values less than 0x80 mean "copy that many bytes from the
@@ -188,6 +195,7 @@ class YKCMPArchive:
                 res[op] = min(0x7f, len(data) - ip)
                 op = op + 1
 
+            # TODO: do this with slice syntax
             res[op] = data[ip]
             ip += 1
             op += 1
