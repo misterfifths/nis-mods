@@ -1,6 +1,6 @@
 import ctypes as C
 import os
-from typing import Annotated, Final, TypeVar
+from typing import Annotated, ByteString, Final, TypeVar
 
 from astruct import typed_struct
 from astruct.type_hints import *
@@ -72,6 +72,76 @@ class StartDatArchive:
             print(f'Extracting {f.filename} @ {f.offset:#x}: {f.size} bytes')
             with open(os.path.join(dirname, f.filename), 'wb') as o:
                 o.write(self._buffer[f.offset:f.offset + f.size])
+
+    def archive_by_replacing_file(self,
+                                  file_name: str,
+                                  new_data: ByteString) -> 'StartDatArchive':
+        """Create a new StartDatArchive by replacing the given file name with
+        the given bytes. The new data does not need to have the same size as
+        the old.
+        """
+
+        # TODO: share some code between this and the nearly identical method
+        # on PSPFSArchive.
+
+        file_to_replace = self.find_file(file_name)
+
+        size_delta = len(new_data) - file_to_replace.size
+
+        # Calculate the size of the new archive.
+        # It's not safe to assume that the files are densely packed (i.e., we
+        # can't just add up all the file sizes). Instead we have to find the
+        # extent of the last file, after any offset shifting necessitated by
+        # the replacement changing size.
+        max_extent = 0
+        for file in self.files:
+            if file.filename == file_name:
+                extent = file.offset + len(new_data)
+            elif file.offset > file_to_replace.offset:
+                extent = file.offset + size_delta + file.size
+            else:
+                extent = file.offset + file.size
+
+            max_extent = max(max_extent, extent)
+
+        res = bytearray(max_extent)
+
+        new_header = StartDatHeader.from_buffer(res, 0)
+        new_header.magic = StartDatHeader.MAGIC
+        new_header.file_count = self._header.file_count
+        new_header.validate()
+
+        file_entries_offset = C.sizeof(StartDatHeader)
+        FileEntriesArray = StartDatFileEntry * self._header.file_count
+        new_files = FileEntriesArray.from_buffer(res, file_entries_offset)
+
+        # build up the new list of file entries & contents
+        for i in range(self._header.file_count):
+            file = self.files[i]
+            new_file: StartDatFileEntry = new_files[i]
+
+            # copy over everything from the old entry
+            new_file.filename = file.filename
+            new_file.size = file.size
+            new_file.offset = file.offset
+
+            if file.filename == file_name:
+                # update sizes if it's the file we're replacing
+                new_file.size = len(new_data)
+
+                # copy new data
+                res[new_file.offset:new_file.offset + len(new_data)] = new_data
+            else:
+                if new_file.offset > file_to_replace.offset:
+                    # shift the offset if it appears after the file we're
+                    # replacing
+                    new_file.offset += size_delta
+
+                # copy old data
+                old_data = self._buffer[file.offset:file.offset + file.size]
+                res[new_file.offset:new_file.offset + file.size] = old_data
+
+        return StartDatArchive(res)
 
     @ro_cached_property
     def wishtab(self) -> WishTable:
