@@ -4,6 +4,7 @@ from typing import Annotated, ByteString, Final, TypeVar
 
 from astruct import typed_struct
 from astruct.type_hints import *
+from makai_kingdom.names import NameTable
 from utils import CountedTable, ro_cached_property
 
 from .classes import ClassTable
@@ -162,3 +163,8 @@ class StartDatArchive:
     def skilltab(self) -> SkillTable:
         file_entry = self.find_file(SkillTable.STANDARD_FILENAME)
         return SkillTable(self._buffer, file_entry.offset)
+
+    @ro_cached_property
+    def nametab(self) -> NameTable:
+        file_entry = self.find_file(NameTable.STANDARD_FILENAME)
+        return NameTable(self._buffer, file_entry.offset)
