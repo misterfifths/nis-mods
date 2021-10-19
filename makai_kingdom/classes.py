@@ -147,7 +147,14 @@ class ClassTable(CountedTable[Class]):
             if cls.class_name == class_name:
                 return cls
 
-        raise KeyError(f'No class or item with the class_name "{class_name}"')
+        raise KeyError(f'No class with the class_name "{class_name}"')
+
+    def class_for_name(self, name: str) -> Class:
+        for cls in self:
+            if cls.name == name:
+                return cls
+
+        raise KeyError(f'No class with the name "{name}"')
 
     def class_for_id(self, id: int) -> Class:
         for cls in self:
