@@ -13,7 +13,7 @@ class Wish(C.Structure):
     mana_cost: CUInt32
     level_req: CUInt16
     id: CUInt16
-    _unk: CUInt8
+    _zero: CUInt8
     name: CStr[63]
     description: CStr[64]  # TODO: why the length difference?
 
