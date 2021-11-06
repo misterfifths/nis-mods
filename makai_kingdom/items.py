@@ -50,12 +50,15 @@ class Item(C.Structure):
     # this id up and returns a more useful ItemCategory object.
     category_id: CUInt8
 
-    _unk3: CUInt8Array[4]
+    # 0 - 6. Anything > 0 is not available for sale in stores. 6 seems reserved
+    # for unobtainable items.
+    rarity: CUInt8
+    _zero1: CUInt8Array[3]
     id: CUInt16
-    _unk4: CUInt8Array[6]
+    _unk3: CUInt8Array[6]
     move: CInt16
     equip_stats: CInt16Array[7]
-    _unk5: CUInt8Array[4]
+    _unk4: CUInt8Array[4]
     confine_percents: CUInt16Array[7]
 
     # An item can differently effect up to 2 elemental resistances and 2
@@ -66,7 +69,7 @@ class Item(C.Structure):
     # resistance. The _types arrays are terminated by a zero.
     # For example, if elemental_res_types is [3 (FIRE | WIND), 4 (ICE)],
     # and elemental_res_amounts is [10, -20], the item will imbue a 10% boost
-    # to the fire and wind resistances, and a -20% debuff to wind resistance.
+    # to the fire and wind resistances, and a -20% debuff to ice resistance.
     elemental_res_types: CUInt16Array[2]
     elemental_res_amounts: CInt16Array[2]
 
@@ -84,7 +87,7 @@ class Item(C.Structure):
     # I can tell, this array is useless.
     _active_skill_ones: CUInt16Array[12]
 
-    _zero: CUInt8Array[2]
+    _zero2: CUInt8Array[2]
 
     hl_cost: CUInt32
     mt_cost: CUInt32

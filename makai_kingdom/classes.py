@@ -27,6 +27,15 @@ class StatIndex(enum.IntEnum):
     TEC = 6
 
 
+"""
+Unfortunately for us, Makai Kingdom baked certain data into its executable,
+so we can't easily modify it. One key example: the protections provided by
+buildings and their strengths are not part of any of these data files.
+
+Bummer.
+"""
+
+
 @typed_struct
 class Class(C.Structure):
     _pack_ = 1
@@ -58,7 +67,7 @@ class Class(C.Structure):
     # number of equipment/item slots they have. For buildings and vehicles,
     # the two numbers are always equal. I imagine it has something to do with
     # whether a slot is for an item or can also be a character, hence the names
-    # I chose.
+    # I chose. Max total_slots seems to be 16.
     character_slots: CUInt8
     total_slots: CUInt8
 
@@ -96,7 +105,7 @@ class Class(C.Structure):
 
     # The level at which the class learns passive skills. The order is the same
     # as the IDs in passive_skill_ids.
-    passive_skill_levels: CUInt16Array[24]
+    passive_skill_learn_levels: CUInt16Array[24]
 
     # The IDs of the active skills learned by this class. The level at which
     # the class learns the skills are in the corresponding index in the
