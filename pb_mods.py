@@ -2,6 +2,7 @@
 
 import sys
 from pathlib import Path
+from typing import Optional
 
 from phantom_brave import *
 
@@ -219,6 +220,14 @@ def patch_file(src: Path, dest: Path, is_psp: bool) -> None:
 
 
 def main(args: list[str]) -> int:
+    # TODO: is there a decent way to detect if we were given a PSP/PC file (or
+    # if we were given the PC's DATA.DAT, which is not what we need)?
+
+    is_psp: Optional[bool] = None
+    if '-psp' in args:
+        is_psp = True
+        args.remove('-psp')
+
     if '-v' in args:
         global verbose
         verbose = True
@@ -230,11 +239,17 @@ def main(args: list[str]) -> int:
         args.remove('-f')
 
     if len(args) != 1 or args[0] == '-h' or args[0] == '--help':
-        print('Usage: pb_mods.py [-v] [-f] <path to DATA.DAT or SUBDATA.DAT>\n', file=sys.stderr)
+        print('Usage: pb_mods.py [-v] [-f] [-psp] <path to DATA.DAT or SUBDATA.DAT>\n',
+              file=sys.stderr)
+        print('If the input file is named DATA.DAT, it is assumed to be for the PSP\n'
+              'version of the game. Otherwise, it is assumed to be for the PC or\n'
+              'Switch versions of the game (which use SUBDATA.DAT). Provide the\n'
+              '-psp argument to force that mode regardless of the filename.\n', file=sys.stderr)
         print('Patched output will be created in the same directory as the input in\n'
               'a file with the suffix .patched.\n', file=sys.stderr)
         print('-v    Verbose logging', file=sys.stderr)
         print('-f    Overwrite an existing output file', file=sys.stderr)
+        print('-psp  Process the input in PSP mode', file=sys.stderr)
         return 1
 
     src = Path(args[0])
@@ -243,16 +258,19 @@ def main(args: list[str]) -> int:
         print(f'Input file {src} does not exist.')
         return 1
 
-    if src.name == 'SUBDATA.DAT':
-        is_psp = False
-    elif src.name == 'DATA.DAT':
-        is_psp = True
-    else:
-        print('Input file must be named either SUBDATA.DAT (PC/Switch) or DATA.DAT (PSP).',
-              file=sys.stderr)
-        return 1
+    if is_psp is None:
+        if src.name == 'DATA.DAT':
+            is_psp = True
+        else:
+            is_psp = False
+            if src.name != 'SUBDATA.DAT':
+                print('>> Assuming the input is for the PC or Switch version of the game!\n')
 
-    dest = src.with_suffix('.DAT.patched')
+    if src.suffix == '.DAT':
+        dest = src.with_suffix('.DAT.patched')
+    else:
+        dest = src.with_suffix('.patched')
+
     if dest.exists() and not force:
         print(f'Destination {dest} already exists. Delete it and try again.')
         return 1

@@ -260,7 +260,11 @@ def main(args: list[str]) -> int:
         print(f'Input file {src} does not exist.')
         return 1
 
-    dest = src.with_suffix('.DAT.patched')
+    if src.suffix == '.DAT':
+        dest = src.with_suffix('.DAT.patched')
+    else:
+        dest = src.with_suffix('.patched')
+
     if dest.exists() and not force:
         print(f'Destination {dest} already exists. Delete it and try again.')
         return 1
