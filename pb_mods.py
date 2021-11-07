@@ -5,12 +5,19 @@ from pathlib import Path
 
 from phantom_brave import *
 
+verbose = False
+
+
+def dbg(s: str) -> None:
+    if verbose:
+        print('   ' + s)
+
 
 def _add_item_to_category(cat_name: str, item_class_name: str, start_dat: StartDatArchive) -> None:
     cat = start_dat.cattab.category_for_name(cat_name)
     item = start_dat.classtab.entry_for_class_name(item_class_name)
 
-    print(f'Adding {item.name} to category {cat.name}')
+    dbg(f'Adding {item.name} to category {cat.name}')
     cat.add_member(CategoryMemberKind.CLASS_OR_ITEM, item.id)
 
 
@@ -63,7 +70,7 @@ def create_rarity_category(start_dat: StartDatArchive) -> None:
     )
 
     print('\n>> Creating Rarity dungeon item pool...')
-    print(f'(moving items from donor category "{donor_cat_name}")')
+    dbg(f'Relocating items from donor category "{donor_cat_name}"')
 
     cat = start_dat.cattab.category_for_name(donor_cat_name)
 
@@ -71,7 +78,7 @@ def create_rarity_category(start_dat: StartDatArchive) -> None:
     for cat_name, item_class_name in items_to_move:
         _add_item_to_category(cat_name, item_class_name, start_dat)
 
-    print('(configuring new category)')
+    dbg('Configuring new category')
 
     cat.name = 'Rarity'
     cat.monk_level_req = 75
@@ -110,8 +117,11 @@ def adjust_skill_costs_big_time(start_dat: StartDatArchive) -> None:
         if skill.sp_cost > 0:
             new_sp_cost = max(1, new_sp_cost)
 
-        skill.mana_cost = new_mana_cost
-        skill.sp_cost = new_sp_cost
+        if new_mana_cost != skill.mana_cost or new_sp_cost != skill.sp_cost:
+            dbg(f'{skill.name}: mana {skill.mana_cost} -> {new_mana_cost}, '
+                f'SP {skill.sp_cost} -> {new_sp_cost}')
+            skill.mana_cost = new_mana_cost
+            skill.sp_cost = new_sp_cost
 
 
 def adjust_passive_skill_levels(start_dat: StartDatArchive) -> None:
@@ -132,7 +142,7 @@ def adjust_passive_skill_levels(start_dat: StartDatArchive) -> None:
         skill_idx = cls.index_of_passive_skill_id(skill.id)
         old_level = cls.passive_skill_levels[skill_idx]
 
-        print(f'bumping {skill_name} on {class_name} from level {old_level} to {new_level}')
+        dbg(f'Bumping {skill_name} on {class_name} from level {old_level} to {new_level}')
         cls.passive_skill_levels[skill_idx] = new_level
 
 
@@ -153,11 +163,11 @@ def increase_bottlemail_steal(start_dat: StartDatArchive) -> None:
 
 
 def make_thief_title(start_dat: StartDatArchive) -> None:
-    print('\n>>> Making Thief title...')
+    print('\n>> Making Thief title...')
 
     donor = start_dat.titletab.title_for_name('DieNow')
 
-    print(f'(overwriting donor title "{donor.name}")')
+    dbg(f'Overwriting donor title "{donor.name}"')
     donor.name = 'Thief'
 
     # These are a modified version of Techno (still summing to 150)
@@ -199,6 +209,7 @@ def apply_patches(arch: PSPFSArchive) -> None:
 
 
 def patch_file(src: Path, dest: Path, is_psp: bool) -> None:
+    print(f'>> Opening {src} ({"PSP" if is_psp else "PC/Switch"})')
     with PSPFSArchive.from_file(src, is_psp) as arch:
         apply_patches(arch)
 
@@ -208,8 +219,13 @@ def patch_file(src: Path, dest: Path, is_psp: bool) -> None:
 
 
 def main(args: list[str]) -> int:
+    if '-v' in args:
+        global verbose
+        verbose = True
+        args.remove('-v')
+
     if len(args) != 1 or args[0] == '-h' or args[0] == '--help':
-        print('Usage: pb_mods.py <path to DATA.DAT or SUBDATA.DAT>\n', file=sys.stderr)
+        print('Usage: pb_mods.py [-v] <path to DATA.DAT or SUBDATA.DAT>\n', file=sys.stderr)
         print('Patched output will be created in the same directory as the input in\n'
               'a file with the suffix .patched.', file=sys.stderr)
         return 1
