@@ -17,8 +17,8 @@ class Skill(C.Structure):
     name: CStr[22]
 
     # This field has some bizarre non-standard byte sequences, so we use
-    # backslashreplace to make sure they round-trip correctly.
-    description: Annotated[CStr[70], Encoding(errors='backslashreplace')]
+    # surrogateescape to make sure they round-trip correctly.
+    description: Annotated[CStr[70], Encoding(errors='surrogateescape')]
 
     ...
 ```

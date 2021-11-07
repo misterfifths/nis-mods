@@ -103,7 +103,10 @@ class Skill(C.Structure):
     # The description field uses \x87 as the escape sequence for inline icons,
     # as used for special effects and elements. That's not valid shift-jis, so
     # we're using this error handler to round-trip them more nicely.
-    description: Annotated[CStr[56], Encoding(errors='backslashreplace')]
+    # This has the side-effect of strings with that escape sequence not being
+    # directly printable onto a UTF-8 terminal. Print their repr as a
+    # workaround.
+    description: Annotated[CStr[56], Encoding(errors='surrogateescape')]
 
     _zero2: CUInt8
 

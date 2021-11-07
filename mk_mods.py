@@ -20,10 +20,6 @@ def dbg(s: str) -> None:
 def fix_string_fields(start_dat: StartDatArchive) -> None:
     print('\n>> Fixing various misaligned strings...')
 
-    # TODO: the backslashreplace error handler doesn't actually round-trip
-    # invalid bytes in strings, so we have to manipulate raw description
-    # fields in a few places here. Switch to surrogateescape?
-
     # Mega Death has some spaces at the end of its name
     mega_death = start_dat.itemtab.item_for_name('Mega Death')
     # setting this to itself for the side-effect of zeroing bytes after the nul
