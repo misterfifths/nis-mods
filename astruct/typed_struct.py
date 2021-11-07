@@ -80,11 +80,8 @@ def typed_struct(cls: type[_CSU]) -> type[_CSU]:
     annotations instead of _fields_.
 
     To use, decorate a Structure subclass with your fields as class-level
-    attributes, annotated with either CField or CStrField. Omit the _fields_
-    attribute entirely; typed_struct will generate it for you.
-
-    The decorator also adds transparent string properties for fixed-length
-    c_char arrays via the CStrField metadata.
+    attributes, using CField annotations or CStr. Omit the _fields_ attribute
+    entirely; typed_struct will generate it for you.
 
     An example:
 
@@ -93,7 +90,7 @@ def typed_struct(cls: type[_CSU]) -> type[_CSU]:
         level: Annotated[int, CField(c_uint16)]
         hp: Annotated[int, CField(c_uint16)]
         skill_aptitudes: Annotated[Sequence[int], CField(c_uint8 * 8)]
-        name: Annotated[str, CStrField(16)]
+        name: CStr[16]
     """
     if not issubclass(cls, (C.Structure, C.Union)):
         raise TypeError('@typed_struct can only be applied to subclasses of ctypes.Structure or '

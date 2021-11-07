@@ -70,8 +70,8 @@ class CStrAttr:
         Retrieves relevant metadata (e.g. Encoding) from the hint if it is
         Annotated.
 
-        If the hint is not for CStr, CWStr, or an Annotated version thereof,
-        returns None.
+        If the hint is not for CStr, or an Annotated version thereof, returns
+        None.
         """
         # Catch CStr without a length
         if unannotated_hint is CStr:

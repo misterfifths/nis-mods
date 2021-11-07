@@ -17,7 +17,7 @@ class CField:
         level: CUInt32
 
     For arrays of c_chars that represent fixed-length strings, consider using
-    the CStr or CWStr types.
+    the CStr type.
 
     For other kinds of C arrays, consider the helpers in the type_hints module,
     or an annotated CArray type hint.
@@ -35,13 +35,13 @@ class CField:
 
 
 class NotNullTerminated:
-    """Annotation metadata to indicate a CStr or CWStr is not null-terminated.
+    """Annotation metadata to indicate a CStr is not null-terminated.
 
     Example of an annotated attribute in a typed_struct:
         s: Annotated[CStr[10], NotNullTerminated()]
 
-    By default, null termination is enforced on CStr and CWStr fields. This
-    metadata turns off that behavior.
+    By default, null termination is enforced on CStr fields. This metadata
+    turns off that behavior.
     """
     pass
 
@@ -63,14 +63,13 @@ class DoNotZeroExtraBytes:
 
 @dataclass(frozen=True)
 class Encoding:
-    """Annotation metadata to control the encoding of a CStr or CWStr.
+    """Annotation metadata to control the encoding of a CStr.
 
     Example of an annotated attribute in a typed_struct:
         s: Annotated[CStr[10], Encoding('utf-8', errors='replace')]
 
-    The default for an unannotated CStr or CWStr is the shift-jis encoding with
-    strict error handling. Providing this metadata allows control over that
-    behavior.
+    The default for an unannotated CStr is the shift-jis encoding with strict
+    error handling. Providing this metadata allows control over that behavior.
 
     Attributes:
     encoding: The encoding of the string. Default: 'shift-jis'.
