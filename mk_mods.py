@@ -241,10 +241,17 @@ def main(args: list[str]) -> int:
         verbose = True
         args.remove('-v')
 
+    force = False
+    if '-f' in args:
+        force = True
+        args.remove('-f')
+
     if len(args) != 1 or args[0] == '-h' or args[0] == '--help':
-        print('Usage: mk_mods.py [-v] <path to DATA.DAT>\n', file=sys.stderr)
+        print('Usage: mk_mods.py [-v] [-f] <path to DATA.DAT>\n', file=sys.stderr)
         print('Patched output will be created in the same directory as the input in\n'
-              'a file with the suffix .patched.', file=sys.stderr)
+              'a file with the suffix .patched.\n', file=sys.stderr)
+        print('-v    Verbose logging', file=sys.stderr)
+        print('-f    Overwrite an existing output file', file=sys.stderr)
         return 1
 
     src = Path(args[0])
@@ -254,7 +261,7 @@ def main(args: list[str]) -> int:
         return 1
 
     dest = src.with_suffix('.DAT.patched')
-    if dest.exists():
+    if dest.exists() and not force:
         print(f'Destination {dest} already exists. Delete it and try again.')
         return 1
 
