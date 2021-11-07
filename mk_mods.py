@@ -28,11 +28,13 @@ def fix_string_fields(start_dat: StartDatArchive) -> None:
     mega_death = start_dat.itemtab.item_for_name('Mega Death')
     # setting this to itself for the side-effect of zeroing bytes after the nul
     mega_death.name = mega_death.name
+    dbg(f'Mega Death name: {mega_death.name!r}')
     check_null_terminated_strs(mega_death)
 
-    # Same with Prinny Hero.
+    # Same with Prinny Hero's class_name.
     prinny_hero = start_dat.classtab.class_for_name('Prinny Hero')
     prinny_hero.class_name = prinny_hero.class_name
+    dbg(f'Prinny Hero\'s class name: {prinny_hero.class_name!r}')
     check_null_terminated_strs(prinny_hero)
 
     # Volcanic Blast's description begins with nulls
@@ -118,16 +120,18 @@ def adjust_wish_reqs(start_dat: StartDatArchive) -> None:
         if wish.mana_cost > 0 and new_cost == 0:
             new_cost = 1
 
-        if new_cost != wish.mana_cost:
-            dbg(f'{wish.name} mana {wish.mana_cost} -> {new_cost}')
-            wish.mana_cost = new_cost
+        new_cost = min(1000, new_cost)
 
         new_lvl_req = wish.level_req // 3
         if wish.level_req > 0 and new_lvl_req == 0:
             new_lvl_req = 1
 
-        if new_lvl_req != wish.level_req:
-            dbg(f'{wish.name} level {wish.level_req} -> {new_lvl_req}')
+        new_lvl_req = min(100, new_lvl_req)
+
+        if new_cost != wish.mana_cost or new_lvl_req != wish.level_req:
+            dbg(f'{wish.name!r} mana {wish.mana_cost} -> {new_cost}, '
+                f'level {wish.level_req} -> {new_lvl_req}')
+            wish.mana_cost = new_cost
             wish.level_req = new_lvl_req
 
 
@@ -212,6 +216,7 @@ def apply_mods(start_dat: StartDatArchive) -> None:
 
 
 def patch_file(src: Path, dest: Path) -> None:
+    print(f'>> Opening {src}')
     with PSPFSArchive.from_file(src) as arch:
         start_dat = arch.get_start_dat()
 
