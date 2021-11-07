@@ -1,9 +1,11 @@
 import ctypes as C
-from typing import Annotated, Final, Protocol, Union
+from contextlib import contextmanager
+from pathlib import Path
+from typing import Annotated, Final, Iterator, Protocol, Union
 
 from astruct import typed_struct
 from astruct.type_hints import *
-from utils import ro_cached_property
+from utils import private_mmap, ro_cached_property
 
 from .startdatarchive import StartDatArchive
 
@@ -57,7 +59,7 @@ class PSPFSArchive:
 
     files: CArray[PSPFSFileEntry, Union[_PSPFSFileEntry_PCAndSwitch, _PSPFSFileEntry_PSP]]
 
-    def __init__(self, buffer: WriteableBuffer, is_pc_or_switch: bool = True) -> None:
+    def __init__(self, buffer: WriteableBuffer, is_psp: bool = False) -> None:
         self._buffer = buffer
 
         self._header = PSPFSHeader.from_buffer(self._buffer)  # type: ignore[arg-type]
@@ -66,14 +68,22 @@ class PSPFSArchive:
         file_entries_offset = C.sizeof(PSPFSHeader)
 
         FileEntryClass: type[PSPFSFileEntry]
-        if is_pc_or_switch:
-            FileEntryClass = _PSPFSFileEntry_PCAndSwitch
-        else:
+        if is_psp:
             FileEntryClass = _PSPFSFileEntry_PSP
+        else:
+            FileEntryClass = _PSPFSFileEntry_PCAndSwitch
 
         FileEntriesArrayClass = FileEntryClass * self._header.file_count
         self.files = FileEntriesArrayClass.from_buffer(self._buffer,  # type: ignore
                                                        file_entries_offset)
+
+    @classmethod
+    @contextmanager
+    def from_file(cls,
+                  path: Union[Path, str],
+                  is_psp: bool = False) -> Iterator['PSPFSArchive']:
+        with private_mmap(path) as mm:
+            yield cls(mm, is_psp)
 
     def find_file(self, name: str) -> PSPFSFileEntry:
         for file in self.files:

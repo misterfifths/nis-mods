@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 
-import mmap
-import os
 import sys
 from pathlib import Path
 
@@ -200,21 +198,13 @@ def apply_patches(arch: PSPFSArchive) -> None:
     make_thief_title(start_dat)
 
 
-def patch_file(src: Path, dest: Path, is_pc_or_switch: bool) -> None:
-    fd = None
-    try:
-        fd = os.open(str(src), os.O_RDONLY)
-        with mmap.mmap(fd, 0, mmap.MAP_PRIVATE) as mm:
-            arch = PSPFSArchive(mm, is_pc_or_switch)
-            apply_patches(arch)
-            del arch  # avoiding a BufferError by triggering collection of this
+def patch_file(src: Path, dest: Path, is_psp: bool) -> None:
+    with PSPFSArchive.from_file(src, is_psp) as arch:
+        apply_patches(arch)
 
-            print(f'\n>> Writing output to {dest}...')
-            with dest.open('wb') as output:
-                output.write(mm)  # type: ignore[arg-type]
-    finally:
-        if fd is not None:
-            os.close(fd)
+        print(f'\n>> Writing output to {dest}...')
+        with dest.open('wb') as output:
+            output.write(arch._buffer)  # type: ignore[arg-type]
 
 
 def main(args: list[str]) -> int:
@@ -231,9 +221,9 @@ def main(args: list[str]) -> int:
         return 1
 
     if src.name == 'SUBDATA.DAT':
-        is_pc_or_switch = True
+        is_psp = False
     elif src.name == 'DATA.DAT':
-        is_pc_or_switch = False
+        is_psp = True
     else:
         print('Input file must be named either SUBDATA.DAT (PC/Switch) or DATA.DAT (PSP).',
               file=sys.stderr)
@@ -244,7 +234,7 @@ def main(args: list[str]) -> int:
         print(f'Destination {dest} already exists. Delete it and try again.')
         return 1
 
-    patch_file(src, dest, is_pc_or_switch)
+    patch_file(src, dest, is_psp)
     return 0
 
 

@@ -1,8 +1,11 @@
 import ctypes as C
-from typing import Annotated, ByteString, Final
+from contextlib import contextmanager
+from pathlib import Path
+from typing import Annotated, ByteString, Final, Iterator, Union
 
 from astruct import typed_struct
 from astruct.type_hints import *
+from utils import private_mmap
 
 from .startdatarchive import StartDatArchive
 from .ykcmparchive import YKCMPArchive
@@ -59,6 +62,12 @@ class PSPFSArchive:
         FileEntriesArrayClass = PSPFSFileEntry * self._header.file_count
         self.files = FileEntriesArrayClass.from_buffer(self._buffer,  # type: ignore
                                                        file_entries_offset)
+
+    @classmethod
+    @contextmanager
+    def from_file(cls, path: Union[Path, str]) -> Iterator['PSPFSArchive']:
+        with private_mmap(path) as mm:
+            yield cls(mm)
 
     def find_file(self, name: str) -> PSPFSFileEntry:
         for file in self.files:
