@@ -75,15 +75,16 @@ def parse_args() -> Namespace:
     parser.add_argument(
         '--encoding', '-e',
         help='The encoding to use to generate the string interpretation on the '
-             'right side of the output. Multibyte encodings are supported.',
+             'right side of the output. Multibyte encodings are supported. '
+             'Default: utf8.',
         type=valid_encoding_name,
-        default='utf-8')
+        default='utf8')
 
     parser.add_argument(
         '--fallback-encoding', '-f',
         metavar='ENCODING',
         help='The encoding to use in the case the initial encoding fails to '
-             'recognize a character. Should be non-multibyte.',
+             'recognize a character. Should be non-multibyte. Default: mac_roman.',
         type=valid_encoding_name,
         default='mac_roman')
 
@@ -95,7 +96,7 @@ def parse_args() -> Namespace:
 
     parser.add_argument(
         '--bytes-per-line', '-w',
-        help='Specify how many bytes to print per line of output.',
+        help='Specify how many bytes to print per line of output. Default: 16.',
         type=pos_nonzero_int,
         default=16)
 
