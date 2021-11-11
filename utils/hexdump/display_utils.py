@@ -61,9 +61,9 @@ def safe_2_cell_str(c: str,
     """Returns a printable, 2-cell wide version of the single-character string
     c, padded with spaces if necessary.
 
-    If c is a combining character, it is isolated with isolate_combiner first.
-    Non-printable lower ASCII characters are replaced with a symbol from the
-    Control Pictures category, via control_char_symbol. Other non-printable
+    If c is a combining character, it is isolated with combiner_isolation_char
+    first. Non-printable lower ASCII characters are replaced with a symbol from
+    the Control Pictures category, via control_char_symbol. Other non-printable
     characters are replaced with nonprintable_replacement.
 
     Raises a ValueError if any argument is not a single character or if

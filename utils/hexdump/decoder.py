@@ -55,19 +55,21 @@ def iffy_decode(bs: ByteString, /,
                 encoding: str = 'utf8',
                 fallback_encoding: str = 'mac_roman',
                 continuation_char: str = BYTE_CONTINUATION_CHAR,
-                nonprintable_replacement_char: str = NONPRINTABLE_REPLACEMENT_CHAR,
+                replacement_char: str = NONPRINTABLE_REPLACEMENT_CHAR,
                 debug: bool = False) -> list[str]:
     """Returns a list where each element is a representation of the character
     at (or starting at) that byte in the input.
 
     For each byte, an attempt is made to decode a character starting there
-    using encoding. If that fails, fallback_encoding is used on that single
-    byte. If that fails, nonprintable_replacement_char is used.
+    using encoding in 'strict' error mode. If that fails, fallback_encoding
+    is used on that single byte, also in 'strict' error mode. If that also
+    fails, replacement_char is used.
 
-    If a byte is part of a multibyte encoding of a character, the value in
-    the return corresponding to the first byte will be the character itself.
-    All subsequent bytes that are part of that encoding will have the value
-    continuation_char.
+    If a byte is part of a multibyte encoding of a character, the string in
+    the returned list at the index of the first byte will be the character
+    itself. All subsequent bytes that are part of that character's encoding
+    will have the value continuation_char in their corresponding indexes in the
+    return.
     """
     if count is None:
         count = len(bs) - offset
@@ -95,7 +97,7 @@ def iffy_decode(bs: ByteString, /,
             try:
                 s = one_byte.decode(fallback_encoding, errors='strict')
             except UnicodeDecodeError:
-                s = nonprintable_replacement_char
+                s = replacement_char
 
             if debug:
                 print(f'{safe_2_cell_str(s)}\t<~ {hexlify(one_byte):<15}')
