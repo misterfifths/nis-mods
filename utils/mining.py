@@ -11,7 +11,7 @@ from .hexdump import hexdump
 
 __all__ = ['all_zero', 'unkdump', 'check_zero_fields', 'iter_cstr_fields',
            'max_length_of_str_field', 'check_null_terminated_strs',
-           'check_str_field_padding']
+           'check_str_field_padding', 'group_and_dump']
 
 T = TypeVar('T', bound=CStructureOrUnion)
 K = TypeVar('K')
