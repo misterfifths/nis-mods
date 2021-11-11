@@ -10,7 +10,8 @@ from astruct.type_hints import *
 from .hexdump import hexdump
 
 __all__ = ['all_zero', 'unkdump', 'check_zero_fields', 'iter_cstr_fields',
-           'max_length_of_str_field', 'check_null_terminated_strs']
+           'max_length_of_str_field', 'check_null_terminated_strs',
+           'check_str_field_padding']
 
 T = TypeVar('T', bound=CStructureOrUnion)
 K = TypeVar('K')
@@ -134,6 +135,26 @@ def check_null_terminated_strs(s: CStructureOrUnion, check_zeroes_after_null: bo
             if not all_zero(bytes_after_null):
                 print(f'String field {name} has non-zero bytes after null')
                 hexdump(bs, encoding=cstrattr.encoding)
+
+
+def check_str_field_padding(s: T, strify_struct: Callable[[T], str]) -> None:
+    """Checks for CStr fields on s that end in whitespace (ASCII space, tab,
+    or newline, or U+3000 Ideographic Space).
+
+    If any field is found, its name and value is printed, with the header
+    returned by strify_struct.
+    """
+    printed_desc = False
+    for name, _ in iter_cstr_fields(s):
+        val: str = getattr(s, name)
+        if val.endswith(' \t\n\u3000'):
+            if not printed_desc:
+                print(strify_struct(s))
+                printed_desc = True
+            print(f'  field {name} has trailing padding: {val!r}')
+
+    if printed_desc:
+        print()
 
 
 def group_and_dump(objects: Iterable[T],
