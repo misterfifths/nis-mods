@@ -19,6 +19,7 @@ def _fullname(t: Any) -> str:
 SIZED_STRING_TYPE_FULLNAME: Final = _fullname(CStr)
 SIZED_ARRAY_TYPE_FULLNAME_PREFIX: Final = _fullname(CUInt8Array).removesuffix('UInt8Array')
 SIZED_ARRAY_TYPE_FULLNAME_SUFFIX: Final = 'Array'
+SIZED_ARRAY_TYPE_MODULE: Final = CUInt8Array.__module__
 
 CARRAY_PROTOCOL_FULLNAME: Final = _fullname(CArray)
 
@@ -82,8 +83,7 @@ class AStructCheckerPlugin(Plugin):
         # This does the trick for type checking purposes because those helper
         # types are specialized CArray subtypes.
         tp, _, api = analy_ctx
-        # TODO: better way to get this type name?
-        return api.named_type(f'astruct.type_hints.ctypes_helpers.{tp.name}', [])
+        return api.named_type(f'{SIZED_ARRAY_TYPE_MODULE}.{tp.name}', [])
 
     def get_type_analyze_hook(self,
                               fullname: str) -> Optional[Callable[[AnalyzeTypeContext], MyPyType]]:
