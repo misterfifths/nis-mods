@@ -42,8 +42,8 @@ class CountedTable(Sequence[E]):
         """Create a CountedTable instance consisting of elements of type
         element_cls starting at the given offset in buffer.
 
-        element_cls must be a ctypes.Structure subclass, and the buffer must be
-        writeable (e.g. a bytearray, mmap, or memoryview).
+        element_cls must be a ctypes type (e.g. a Structure subclass), and the
+        buffer must be writeable (e.g. a bytearray, mmap, or memoryview).
         """
         self._header = CountedTableHeader.from_buffer(buffer, offset)  # type: ignore[arg-type]
         self._header.validate()

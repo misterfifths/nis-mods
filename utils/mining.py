@@ -1,6 +1,6 @@
 import inspect
 from collections import defaultdict
-from typing import Callable, Iterable, TypeVar
+from typing import Callable, Iterable, Optional, TypeVar
 
 from astruct._cstrattr import CStrAttr
 from astruct.ctypes_utils import get_bytes_for_field
@@ -10,7 +10,7 @@ from astruct.type_hints import *
 from .hexdump import hexdump
 
 __all__ = ['all_zero', 'unkdump', 'check_zero_fields', 'iter_cstr_fields',
-           'check_null_terminated_strs']
+           'max_length_of_str_field', 'check_null_terminated_strs']
 
 T = TypeVar('T', bound=CStructureOrUnion)
 K = TypeVar('K')
@@ -62,6 +62,45 @@ def iter_cstr_fields(s: CStructureOrUnion) -> Iterable[tuple[str, CStrAttr]]:
     for name, desc in inspect.getmembers(type(s), inspect.isdatadescriptor):
         if isinstance(desc, CStrAttr):
             yield (name, desc)
+
+
+def max_length_of_str_field(ss: Iterable[T], field_name: str) -> tuple[int, T]:
+    """Iterates the objects in ss, returning a tuple of longest byte length of
+    the given string field and the object containing it.
+
+    String decoding stops at the first zero character. Raises an error if
+    field_name is not a CStr field, or if ss is empty.
+    """
+    raw_field_name = None
+    decoder = None
+
+    max_len = -1
+    src_obj: Optional[T] = None
+
+    for s in ss:
+        if raw_field_name is None:
+            for str_field_name, cstrattr in iter_cstr_fields(s):
+                if str_field_name == field_name:
+                    raw_field_name = cstrattr.raw_field_name
+                    decoder = get_incremental_decoder(cstrattr.encoding, cstrattr.errors)
+                    break
+
+            if raw_field_name is None:
+                raise ValueError(f'field {field_name!r} is not a CStr')
+
+        assert decoder  # for type-checking
+
+        bs = get_bytes_for_field(s, raw_field_name)
+        _, byte_len = decode_null_terminated(bs, decoder, ignore_missing=True)
+
+        if byte_len > max_len:
+            max_len = byte_len
+            src_obj = s
+
+    if src_obj is None:
+        raise IndexError('iterable is empty')
+
+    return (max_len, src_obj)
 
 
 def check_null_terminated_strs(s: CStructureOrUnion, check_zeroes_after_null: bool = True) -> None:

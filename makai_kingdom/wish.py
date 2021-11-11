@@ -15,7 +15,7 @@ class Wish(C.Structure):
     id: CUInt16
     _zero: CUInt8
     name: CStr[63]
-    description: CStr[64]  # TODO: why the length difference?
+    description: CStr[64]
 
 
 class WishTable(CountedTable[Wish]):
