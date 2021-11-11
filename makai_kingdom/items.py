@@ -112,7 +112,7 @@ class ItemTable(CountedTable[Item]):
             if item.name == name:
                 return item
 
-        raise KeyError(f'No item with the name "{name}"')
+        raise KeyError(f'No item with the name {name!r}')
 
     def item_for_id(self, id: int) -> Item:
         for item in self:

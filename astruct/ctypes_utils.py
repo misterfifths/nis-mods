@@ -28,7 +28,7 @@ def set_bytes_for_field(s: CStructureOrUnion, field_name: str, bs: bytes) -> Non
     size = desc.size
 
     if len(bs) > size:
-        raise IndexError(f'Got {len(bs)} bytes, but field "{field_name}" is only {size} bytes')
+        raise IndexError(f'Got {len(bs)} bytes, but field {field_name!r} is only {size} bytes')
 
     src_buf = C.c_buffer(bs)
     C.memmove(C.byref(s, offset), src_buf, len(bs))

@@ -51,7 +51,7 @@ def pytype_for_typecode(typecode: str) -> type:
         if typecode in codes:
             return t
 
-    raise ValueError(f'Unknown typecode "{typecode}"')
+    raise ValueError(f'Unknown typecode {typecode!r}')
 
 
 simple_type_names: list[str] = []
@@ -97,7 +97,7 @@ for name, cls in inspect.getmembers(C, inspect.isclass):
     try:
         pytype = pytype_for_typecode(typecode)
     except ValueError:
-        print(f'Skipping {name}: unknown _type_ "{typecode}"')
+        print(f'Skipping {name!r}: unknown _type_ {typecode!r}')
         continue
 
     if pytype is int:

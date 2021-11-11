@@ -71,7 +71,7 @@ def create_rarity_category(start_dat: StartDatArchive) -> None:
     )
 
     print('\n>> Creating Rarity dungeon item pool...')
-    dbg(f'Relocating items from donor category "{donor_cat_name}"')
+    dbg(f'Relocating items from donor category {donor_cat_name!r}')
 
     cat = start_dat.cattab.category_for_name(donor_cat_name)
 
@@ -168,7 +168,7 @@ def make_thief_title(start_dat: StartDatArchive) -> None:
 
     donor = start_dat.titletab.title_for_name('DieNow')
 
-    dbg(f'Overwriting donor title "{donor.name}"')
+    dbg(f'Overwriting donor title {donor.name!r}')
     donor.name = 'Thief'
 
     # These are a modified version of Techno (still summing to 150)

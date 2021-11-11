@@ -25,7 +25,7 @@ class PSPFSHeader(C.Structure):
 
     def validate(self) -> None:
         if self.magic != self.MAGIC:
-            raise ValueError(f'Invalid magic in PSPFS header: "{self.magic}"')
+            raise ValueError(f'Invalid magic in PSPFS header: {self.magic!r}')
 
 
 class PSPFSFileEntry(Protocol):
@@ -90,7 +90,7 @@ class PSPFSArchive:
             if file.filename == name:
                 return file
 
-        raise KeyError(f'File "{name}" not found in archive')
+        raise KeyError(f'File {name!r} not found in archive')
 
     @ro_cached_property
     def start_dat(self) -> StartDatArchive:

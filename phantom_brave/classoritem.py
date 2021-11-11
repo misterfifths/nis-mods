@@ -194,7 +194,7 @@ class ClassOrItemTable(CountedTable[ClassOrItem]):
             if coi.class_name == class_name:
                 return coi
 
-        raise KeyError(f'No class or item with the class_name "{class_name}"')
+        raise KeyError(f'No class or item with the class_name {class_name!r}')
 
     def entry_for_id(self, id: int) -> ClassOrItem:
         for coi in self:

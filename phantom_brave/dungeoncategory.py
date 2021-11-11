@@ -103,7 +103,7 @@ class DungeonCategoryTable(CountedTable[DungeonCategory]):
             if cat.name == name:
                 return cat
 
-        raise KeyError(f'No category named "{name}"')
+        raise KeyError(f'No category named {name!r}')
 
     def category_for_id(self, id: int) -> DungeonCategory:
         for cat in self:

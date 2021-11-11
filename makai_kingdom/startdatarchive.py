@@ -63,7 +63,7 @@ class StartDatArchive:
             if file.filename == name:
                 return file
 
-        raise KeyError(f'File "{name}" not found in archive')
+        raise KeyError(f'File {name!r} not found in archive')
 
     def get_file_as_table(self, filename: str, element_cls: type[E]) -> CountedTable[E]:
         file_entry = self.find_file(filename)

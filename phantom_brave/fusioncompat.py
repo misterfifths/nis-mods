@@ -52,7 +52,7 @@ def fusion_compat_id_for_name(name: str) -> int:
         if name == cat_name:
             return id
 
-    raise KeyError(f'Unknown fusion compatibility category name "{name}"')
+    raise KeyError(f'Unknown fusion compatibility category name {name!r}')
 
 
 """

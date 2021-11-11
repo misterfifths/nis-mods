@@ -27,7 +27,7 @@ class PSPFSHeader(C.Structure):
 
     def validate(self) -> None:
         if self.magic != PSPFSHeader.MAGIC:
-            raise ValueError(f'Invalid magic in PSPFS header: "{self.magic}"')
+            raise ValueError(f'Invalid magic in PSPFS header: {self.magic!r}')
 
 
 @typed_struct
@@ -74,7 +74,7 @@ class PSPFSArchive:
             if file.filename == name:
                 return file
 
-        raise KeyError(f'File "{name}" not found in archive')
+        raise KeyError(f'File {name!r} not found in archive')
 
     def get_start_dat(self) -> StartDatArchive:
         """Decompresses the START.KS4 file and returns the resulting

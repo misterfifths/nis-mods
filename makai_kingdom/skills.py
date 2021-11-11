@@ -141,7 +141,7 @@ class SkillTable(CountedTable[Skill]):
             if skill.name == name:
                 return skill
 
-        raise KeyError(f'No skill named "{name}"')
+        raise KeyError(f'No skill named {name!r}')
 
     def skill_for_id(self, id: int) -> Skill:
         for skill in self:

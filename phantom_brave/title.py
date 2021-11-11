@@ -121,7 +121,7 @@ class TitleTable(CountedTable[Title]):
             if title.name == name:
                 return title
 
-        raise KeyError(f'No title named "{name}"')
+        raise KeyError(f'No title named {name!r}')
 
     def title_for_id(self, id: int) -> Title:
         for title in self:
