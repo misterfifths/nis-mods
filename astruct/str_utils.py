@@ -3,7 +3,7 @@ from typing import ByteString
 
 
 class NullTerminationError(ValueError):
-    """An with the null termination of a C-style string. A subclass of
+    """An error with the null termination of a C-style string. A subclass of
     ValueError."""
     pass
 
