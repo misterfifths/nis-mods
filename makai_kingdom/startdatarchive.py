@@ -27,7 +27,7 @@ class StartDatHeader(C.Structure):
 
     def validate(self) -> None:
         if self.magic != self.MAGIC:
-            raise ValueError(f'Invalid magic in START.DAT header: {self.magic}')
+            raise ValueError(f'Invalid magic in START.DAT header: {self.magic!r}')
 
 
 @typed_struct

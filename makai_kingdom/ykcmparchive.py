@@ -25,7 +25,7 @@ class YKCMPHeader(C.Structure):
 
     def validate(self) -> None:
         if self.magic != YKCMPHeader.MAGIC:
-            raise ValueError(f'Invalid magic in YKCMP header: {self.magic}')
+            raise ValueError(f'Invalid magic in YKCMP header: {self.magic!r}')
 
         # Not actually sure if this is important, but checking it can't hurt.
         if self._unk != YKCMPHeader.UNKNOWN_FIELD:
