@@ -1,6 +1,6 @@
 import inspect
-from collections import defaultdict
-from typing import Callable, Iterable, Optional, TypeVar
+from collections import Counter, defaultdict
+from typing import ByteString, Callable, DefaultDict, Iterable, Optional, TypeVar
 
 from astruct._cstrattr import CStrAttr
 from astruct.ctypes_utils import get_bytes_for_field
@@ -11,7 +11,9 @@ from .hexdump import hexdump
 
 __all__ = ['all_zero', 'unkdump', 'check_zero_fields', 'iter_cstr_fields',
            'max_length_of_str_field', 'check_null_terminated_strs',
-           'check_str_field_padding', 'group_and_dump']
+           'check_str_field_padding', 'group_and_dump', 'iter_unk_fields',
+           'count_byte_values', 'shared_byte_values', 'unique_byte_values',
+           'shared_unk_bytes', 'unique_unk_bytes']
 
 T = TypeVar('T', bound=CStructureOrUnion)
 K = TypeVar('K')
@@ -22,21 +24,99 @@ def all_zero(xs: Iterable[int]) -> bool:
     return all(x == 0 for x in xs)
 
 
+def iter_unk_fields(s: CStructureOrUnion) -> Iterable[tuple[str, bytes]]:
+    """Yields the names and bytes of all fields on s beginning with _unk."""
+    fields: CStructureFields = s._fields_
+    for tup in fields:
+        name = tup[0]
+        if name.startswith('_unk'):
+            yield (name, get_bytes_for_field(s, name))
+
+
 def unkdump(s: CStructureOrUnion, encoding: str = 'shift-jis', decimal: bool = False) -> None:
     """Hexdumps all the fields of the given ctypes Structure whose names begin
     with '_unk'.
 
     Uses the given encoding for the character interpretation in the hex dump.
     """
-    fields: CStructureFields = s._fields_
-    for tup in fields:
-        name = tup[0]
-        if not name.startswith('_unk'):
-            continue
-
-        bs = get_bytes_for_field(s, name)
-        print(f'==> {name}')
+    for field_name, bs in iter_unk_fields(s):
+        print(f'==> {field_name}')
         hexdump(bs, encoding=encoding, decimal=decimal)
+
+
+def count_byte_values(bss: Iterable[ByteString]) -> list[Counter[int]]:
+    """Returns a list of Counters, each of which records the values of the
+    bytes at the corresponding index in the given ByteStrings."""
+    counts_for_idx: list[Counter[int]] = []
+    bs_len = None
+    for bs in bss:
+        if bs_len is None:
+            bs_len = len(bs)
+            counts_for_idx = [Counter() for _ in range(bs_len)]
+
+        assert len(bs) == bs_len
+
+        for i, b in enumerate(bs):
+            counts_for_idx[i][b] += 1
+
+    return counts_for_idx
+
+
+def shared_byte_values(bss: Iterable[ByteString]) -> Iterable[tuple[int, int]]:
+    """Yields tuples of (index, value) for each index that has the same value
+    for all given ByteStrings.
+
+    For example, if given [b'abc', b'dbc', b'fgc'], the tuple (2, b'c') would
+    result, since index 2 has the value b'c' in all the arguments.
+    """
+    counts_for_idx = count_byte_values(bss)
+    for i, counter in enumerate(counts_for_idx):
+        if len(counter) == 1:  # only one byte value for this index?
+            val = list(counter.keys())[0]  # fetch the byte value
+            yield (i, val)
+
+
+def unique_byte_values(bss: Iterable[ByteString]) -> Iterable[int]:
+    """Yields the indexes with unique values for all the given byte strings.
+
+    For example, if given [b'abc', b'dbc', b'fgc'], the index 0 would result,
+    since all the arguments have a unique value at that index.
+    """
+    counts_for_idx = count_byte_values(bss)
+    for i, counter in enumerate(counts_for_idx):
+        if len(counter) == sum(counter.values()):  # all unique values for this index?
+            yield i
+
+
+def collect_unk_bytes(ss: Iterable[CStructureOrUnion]) -> dict[str, list[bytes]]:
+    """Returns a dictionary with keys that are the names of any fields
+    beginning with _unk in the given structures, and the values are a list of
+    the bytes for that field in each of the structures."""
+    unk_field_bytes: DefaultDict[str, list[bytes]] = DefaultDict(list)
+
+    for s in ss:
+        for field_name, bs in iter_unk_fields(s):
+            unk_field_bytes[field_name].append(bs)
+
+    return unk_field_bytes
+
+
+def shared_unk_bytes(ss: Iterable[CStructureOrUnion]) -> Iterable[tuple[str, int, int]]:
+    """Searches fields beginning with _unk on the given structures and yields
+    tuples (field_name, index, value) for each index in the bytes for
+    field_name that has the same value for all objects."""
+    for field_name, bss in collect_unk_bytes(ss).items():
+        for idx, val in shared_byte_values(bss):
+            yield (field_name, idx, val)
+
+
+def unique_unk_bytes(ss: Iterable[CStructureOrUnion]) -> Iterable[tuple[str, int]]:
+    """Searches fields beginning with _unk on the given structures and yields
+    tuples (field_name, index) for each index in the bytes for field_name that
+    has a unique value for each object."""
+    for field_name, bss in collect_unk_bytes(ss).items():
+        for idx in unique_byte_values(bss):
+            yield (field_name, idx)
 
 
 def check_zero_fields(s: CStructureOrUnion, encoding: str = 'shift-jis') -> None:
