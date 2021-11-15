@@ -7,6 +7,7 @@ packages = [
     { include = "astruct" },
     { include = "phantom_brave" },
     { include = "makai_kingdom" },
+    { include = "zhp" },
     { include = "utils" }
 ]
 
@@ -54,12 +55,22 @@ strict_equality = true
 
 mypy_path = "$MYPY_CONFIG_FILE_DIR"
 plugins = "mypy_plugin.py"
-files = ["*.py", "astruct/**/*.py", "phantom_brave/**/*.py", "makai_kingdom/**/*.py", "utils/**/*.py"]
+files = ["*.py",
+         "astruct/**/*.py",
+         "phantom_brave/**/*.py",
+         "makai_kingdom/**/*.py",
+         "zhp/**/*.py",
+         "utils/**/*.py"]
 
 
 [tool.isort]
 skip_gitignore = true
-src_paths = ["*.py", "astruct/**/*.py", "phantom_brave/**/*.py", "makai_kingdom/**/*.py", "utils/**/*.py"]
+src_paths = ["*.py",
+             "astruct/**/*.py",
+             "phantom_brave/**/*.py",
+             "makai_kingdom/**/*.py",
+             "zhp/**/*.py",
+             "utils/**/*.py"]
 line_length = 100
 known_third_party = ["mypy", "wcwidth"]
-known_first_party = ["utils", "astruct", "phantom_brave", "makai_kingdom"]
+known_first_party = ["utils", "astruct", "phantom_brave", "makai_kingdom", "zhp"]

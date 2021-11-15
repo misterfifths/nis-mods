@@ -1,5 +1,5 @@
 import ctypes as C
-from typing import Iterator, Sequence, TypeVar, Union, overload
+from typing import Iterator, Protocol, Sequence, TypeVar, Union, overload
 
 from astruct import typed_struct
 from astruct.type_hints import *
@@ -14,8 +14,12 @@ approach prevents us from embedding it in other Structures, or in an array.
 E = TypeVar('E', bound=AnyCType)
 
 
+class CountedTableHeader(Protocol):
+    entry_count: int
+
+
 @typed_struct
-class CountedTableHeader(C.Structure):
+class _DoubleCountedTableHeader(C.Structure):
     _pack_ = 1
 
     # TODO: unclear on the difference between these values. I assume one is
@@ -30,6 +34,16 @@ class CountedTableHeader(C.Structure):
                              f' ({self.entry_count})!')
 
 
+@typed_struct
+class _SingleCountedTableHeader(C.Structure):
+    _pack_ = 1
+
+    entry_count: CUInt32
+
+    def validate(self) -> None:
+        pass
+
+
 class CountedTable(Sequence[E]):
     """A length-prefixed sequence of instances of a particular C structure.
 
@@ -38,19 +52,28 @@ class CountedTable(Sequence[E]):
     _header: CountedTableHeader
     _entries: C.Array[E]
 
-    def __init__(self, element_cls: type[E], buffer: WriteableBuffer, offset: int = 0) -> None:
+    def __init__(self,
+                 element_cls: type[E],
+                 buffer: WriteableBuffer,
+                 offset: int = 0,
+                 double_counted: bool = True) -> None:
         """Create a CountedTable instance consisting of elements of type
         element_cls starting at the given offset in buffer.
 
         element_cls must be a ctypes type (e.g. a Structure subclass), and the
         buffer must be writeable (e.g. a bytearray, mmap, or memoryview).
+
+        If the table has a header with a capacity and count, double_counted
+        should be True. If it only has a single count in the header, pass
+        False for that parameter.
         """
-        self._header = CountedTableHeader.from_buffer(buffer, offset)  # type: ignore[arg-type]
+        HeaderClass = _DoubleCountedTableHeader if double_counted else _SingleCountedTableHeader
+        self._header = HeaderClass.from_buffer(buffer, offset)  # type: ignore[arg-type]
         self._header.validate()
 
         EntriesArray: type[C.Array[E]]
         EntriesArray = element_cls * self._header.entry_count  # type: ignore[operator, assignment]
-        entries_offset = offset + C.sizeof(CountedTableHeader)
+        entries_offset = offset + C.sizeof(HeaderClass)
         self._entries = EntriesArray.from_buffer(buffer,  # type: ignore[arg-type]
                                                  entries_offset)
 
