@@ -45,7 +45,8 @@ class Item(C.Structure):
     _unk1: CUInt8
     rank: CUInt8  # Star count
 
-    _unk2: CUInt8Array[2]
+    _unk2: CUInt8
+    range: CUInt8
     jump: CUInt8
     _unk3: CUInt8Array[8]
 
@@ -60,8 +61,16 @@ class Item(C.Structure):
     category_id: CUInt8
 
     _zero1: CUInt8
-    skill_id: CUInt16
-    _unk5: CUInt8Array[24]
+
+    skill_id: CUInt16  # Passive skill ID, if any; look up in SkillTable
+
+    specials_count: CUInt16  # Count of special skills on the item; may be zero
+    # Not sure how many of these there can actually be (3 is the max on
+    # template items), but there are zeroes on all items in enough bytes for
+    # there to be 8.
+    specials_ids: CUInt16Array[8]
+
+    _unk5: CUInt8Array[6]
 
     resistances: CInt8Array[3]  # In the order of ItemResistanceIndex
 

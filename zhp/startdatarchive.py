@@ -9,6 +9,7 @@ from utils import ro_cached_property
 
 from .items import ItemTable
 from .skills import SkillTable
+from .specials import SpecialSkillsTable
 
 
 @typed_struct
@@ -103,3 +104,8 @@ class StartDatArchive:
     def skilltab(self) -> SkillTable:
         file_entry = self.find_file(SkillTable.STANDARD_FILENAME)
         return SkillTable(self._buffer, file_entry.offset)
+
+    @ro_cached_property
+    def spectab(self) -> SpecialSkillsTable:
+        file_entry = self.find_file(SpecialSkillsTable.STANDARD_FILENAME)
+        return SpecialSkillsTable(self._buffer, file_entry.offset)

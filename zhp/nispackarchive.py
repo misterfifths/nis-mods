@@ -86,7 +86,7 @@ class NISPACKArchive:
 
         Note that this is a copy of the decompressed data; changes to its bytes
         will not be automatically reflected in underlying buffer for the
-        PSPFSArchive to which it belongs.
+        NISPACKArchive to which it belongs.
         """
         start_lzs = self.find_file(StartDatArchive.STANDARD_FILENAME)
         start_arch = LZSArchive(self._buffer, start_lzs.offset)
