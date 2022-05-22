@@ -1,11 +1,13 @@
 import math
-from typing import ByteString, Optional
+import sys
+from typing import IO, Optional
 
+from .byte_utils import BytesLike
 from .decoder import iffy_decode
 from .display_utils import safe_2_cell_str
 
 
-def hexdump(bs: ByteString, *,
+def hexdump(bs: BytesLike, *,
             offset: int = 0,
             count: Optional[int] = None,
             encoding: str = 'utf8',
@@ -13,6 +15,7 @@ def hexdump(bs: ByteString, *,
             decimal: bool = False,
             bytes_per_line: int = 16,
             show_chars: bool = True,
+            file: IO[str] = sys.stdout,
             debug: bool = False) -> None:
     """Prints the given bytes in hexadecimal format, side-by-side with an
     interpretation of the bytes in the given encoding.
@@ -40,6 +43,7 @@ def hexdump(bs: ByteString, *,
     bytes_per_line: How many bytes to print per line. Default: 16
     show_chars: True to show the string interpetation of bytes on the right
         side of the output. Default: True
+    file: The file to write output to. Default: sys.stdout.
     debug: Show verbose information about every byte range in the input.
         Default: False
     """
@@ -66,7 +70,7 @@ def hexdump(bs: ByteString, *,
         assert len(decoded_byte_strs) == count
 
     for start_addr in range(offset, offset + count, bytes_per_line):
-        print(f'{start_addr:0{addr_len}x} |  ', end='')
+        print(f'{start_addr:0{addr_len}x} |  ', end='', file=file)
 
         # The data might end before the full length of the line
         line_end_addr = min(offset + count, start_addr + bytes_per_line)
@@ -80,18 +84,18 @@ def hexdump(bs: ByteString, *,
             extra_space_before_strs += 1
 
         for addr in range(start_addr, line_end_addr):
-            print(f'{bs[addr]:{byte_format}} ', end='')
+            print(f'{bs[addr]:{byte_format}} ', end='', file=file)
 
             # Space for a column down the middle:
             if addr == (start_addr + bytes_per_line // 2) - 1:
-                print(' ', end='')
+                print(' ', end='', file=file)
 
         if decoded_byte_strs:
-            print((extra_space_before_strs * ' ') + ' |', end='')
+            print((extra_space_before_strs * ' ') + ' |', end='', file=file)
             for addr in range(start_addr, line_end_addr):
                 # decoded_byte_strs starts has index 0 corresponding to offset
-                print(safe_2_cell_str(decoded_byte_strs[addr - offset]), end='')
+                print(safe_2_cell_str(decoded_byte_strs[addr - offset]), end='', file=file)
 
-            print('|', end='')
+            print('|', end='', file=file)
 
-        print()
+        print(file=file)

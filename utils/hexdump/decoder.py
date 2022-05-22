@@ -1,15 +1,15 @@
 import codecs
 import unicodedata
-from typing import ByteString, Final, Optional
+from typing import Final, Optional
 
-from .byte_utils import hexlify
+from .byte_utils import BytesLike, hexlify
 from .display_utils import NONPRINTABLE_REPLACEMENT_CHAR, safe_2_cell_str
 
 BYTE_CONTINUATION_CHAR: Final = '⋯'
 
 
 def decode_one(decoder: codecs.IncrementalDecoder,
-               bs: ByteString,
+               bs: BytesLike,
                start_idx: int,
                end_idx: int) -> Optional[tuple[str, int]]:
     """Attempts to decode a single character from the given bytes using the
@@ -49,7 +49,7 @@ def decode_one(decoder: codecs.IncrementalDecoder,
     return None
 
 
-def iffy_decode(bs: ByteString, /,
+def iffy_decode(bs: BytesLike, /,
                 offset: int = 0,
                 count: Optional[int] = None,
                 encoding: str = 'utf8',

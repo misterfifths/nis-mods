@@ -1,7 +1,12 @@
-from typing import ByteString, Iterable, Union
+from typing import TYPE_CHECKING, ByteString, Iterable, Union
+
+if TYPE_CHECKING:
+    import mmap
+
+BytesLike = Union[ByteString, memoryview, 'mmap.mmap']
 
 
-def hexlify(bs: Union[ByteString, Iterable[int], int]) -> str:
+def hexlify(bs: Union[BytesLike, Iterable[int], int]) -> str:
     """Converts each byte in the argument into the corresponding 2-digit hex
     representation, and returns them all joined with spaces.
 
@@ -12,10 +17,10 @@ def hexlify(bs: Union[ByteString, Iterable[int], int]) -> str:
     if isinstance(bs, int):
         return f'{bs:02x}'
 
-    return ' '.join(f'{b:02x}' for b in bs)
+    return ' '.join(f'{b:02x}' for b in bs)  # type: ignore
 
 
-def build_bytes(*parts: Union[str, bytes, int, Iterable[int]],
+def build_bytes(*parts: Union[str, BytesLike, int, Iterable[int]],
                 encoding: str = 'utf8',
                 errors: str = 'strict') -> bytearray:
     """Constructs a single bytearray by concatenating a mixture of bytes, ints,
@@ -34,6 +39,6 @@ def build_bytes(*parts: Union[str, bytes, int, Iterable[int]],
         elif isinstance(part, int):
             res.append(part)
         else:
-            res.extend(part)
+            res.extend(part)  # type: ignore
 
     return res
