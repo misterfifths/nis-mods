@@ -3,8 +3,10 @@ max-line-length = 100
 max-doc-length = 80
 exclude = scratch/
 
-# star imports stuff
-ignore = F405,F403
+# F405 and F403 are about star imports
+# W504 is line break after binary operator, which seems to have a bug where
+# fixing it triggers W503, line break before binary operator :-(
+ignore = F405,F403,W504
 
 # imported but unused
 per-file-ignores = __init__.py: F401
