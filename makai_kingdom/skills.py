@@ -1,6 +1,9 @@
 import ctypes as C
 import enum
+import unicodedata
 from typing import Annotated, Final
+
+from platform_config import PSP
 
 from astruct import typed_struct
 from astruct.type_hints import *
@@ -98,7 +101,9 @@ class Skill(C.Structure):
     id: CUInt16
     _unk1: CUInt8Array[2]
     sp_cost: CUInt32
-    name: CStr[22]
+
+    _NAME_LEN: Final[int] = 22 if PSP else 31
+    name: CStr[_NAME_LEN]
 
     # The description field uses \x87 as the escape sequence for inline icons,
     # as used for special effects and elements. That's not valid shift-jis, so
@@ -106,7 +111,8 @@ class Skill(C.Structure):
     # This has the side-effect of strings with that escape sequence not being
     # directly printable onto a UTF-8 terminal. Print their repr as a
     # workaround.
-    description: Annotated[CStr[56], Encoding(errors='surrogateescape')]
+    _DESCRIPTION_LEN: Final[int] = 56 if PSP else 104
+    description: Annotated[CStr[_DESCRIPTION_LEN], Encoding(errors='surrogateescape')]
 
     _zero2: CUInt8
 
@@ -127,7 +133,8 @@ class Skill(C.Structure):
     # SkillEffectType for possible values. The list is terminated by a zero.
     effect_types: CUInt8Array[5]
 
-    _unk4: CUInt8
+    _UNK4_LEN: Final[int] = 1 if PSP else 4
+    _unk4: CUInt8Array[_UNK4_LEN]
 
 
 class SkillTable(CountedTable[Skill]):
@@ -136,9 +143,10 @@ class SkillTable(CountedTable[Skill]):
     def __init__(self, buffer: WriteableBuffer, offset: int = 0) -> None:
         super().__init__(Skill, buffer, offset)
 
-    def skill_for_name(self, name: str) -> Skill:
+    def skill_for_name(self, name: str, normalize: bool = True) -> Skill:
         for skill in self:
-            if skill.name == name:
+            if (skill.name == name or
+                    (normalize and unicodedata.normalize('NFKC', skill.name) == name)):
                 return skill
 
         raise KeyError(f'No skill named {name!r}')

@@ -2,6 +2,8 @@ import enum
 from enum import auto
 from typing import Optional
 
+from platform_config import PSP
+
 
 @enum.unique
 class ItemKind(enum.IntEnum):
@@ -20,7 +22,7 @@ class ItemCategory(enum.Enum):
     DAGGER = (0x01, 'Dagger', ItemKind.WEAPON)
     SWORD = (0x02, 'Sword', ItemKind.WEAPON)
     KATANA = (0x03, 'Katana', ItemKind.WEAPON)
-    BEAM_SABER = (0x04, 'Beam Sword', ItemKind.WEAPON)
+    BEAM_SABER = (0x04, 'Beam Sword' if PSP else 'Beam Saber', ItemKind.WEAPON)
     AXE = (0x05, 'Axe', ItemKind.WEAPON)
     FRYING_PAN = (0x06, 'Frying Pan', ItemKind.WEAPON)
     MORNINGSTAR = (0x07, 'Morningstar', ItemKind.WEAPON)

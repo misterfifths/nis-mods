@@ -1,6 +1,9 @@
 import ctypes as C
 import enum
+import unicodedata
 from typing import Final
+
+from platform_config import PSP
 
 from astruct import typed_struct
 from astruct.type_hints import *
@@ -34,8 +37,12 @@ class StatusResType(enum.IntFlag):
 class Item(C.Structure):
     _pack_ = 1
 
-    name: CStr[21]
-    description: CStr[57]
+    _NAME_LEN: Final[int] = 21 if PSP else 31
+    name: CStr[_NAME_LEN]
+
+    _DESCRIPTION_LEN: Final[int] = 57 if PSP else 113
+    description: CStr[_DESCRIPTION_LEN]
+
     rank: CUInt8
     _unk1: CUInt8Array[3]
 
@@ -87,7 +94,8 @@ class Item(C.Structure):
     # I can tell, this array is useless.
     _active_skill_ones: CUInt16Array[12]
 
-    _zero2: CUInt8Array[2]
+    if PSP:
+        _zero2: CUInt8Array[2]
 
     hl_cost: CUInt32
     mt_cost: CUInt32
@@ -107,9 +115,10 @@ class ItemTable(CountedTable[Item]):
     def __init__(self, buffer: WriteableBuffer, offset: int = 0) -> None:
         super().__init__(Item, buffer, offset)
 
-    def item_for_name(self, name: str) -> Item:
+    def item_for_name(self, name: str, normalize: bool = True) -> Item:
         for item in self:
-            if item.name == name:
+            if (item.name == name or
+                    (normalize and unicodedata.normalize('NFKC', item.name) == name)):
                 return item
 
         raise KeyError(f'No item with the name {name!r}')

@@ -1,6 +1,8 @@
 import ctypes as C
 from typing import Final
 
+from platform_config import PSP
+
 from astruct import typed_struct
 from astruct.type_hints import *
 from utils import CountedTable
@@ -11,8 +13,12 @@ class Protection(C.Structure):
     _pack_ = 1
 
     id: CUInt8
-    name: CStr[22]
-    description: CStr[57]
+
+    _NAME_LEN: Final[int] = 22 if PSP else 21
+    name: CStr[_NAME_LEN]
+
+    if PSP:
+        description: CStr[57]
 
 
 class ProtectionTable(CountedTable[Protection]):

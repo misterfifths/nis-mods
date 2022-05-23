@@ -1,6 +1,9 @@
 import ctypes as C
 import enum
+import unicodedata
 from typing import Final
+
+from platform_config import PSP
 
 from astruct import typed_struct
 from astruct.type_hints import *
@@ -40,16 +43,23 @@ Bummer.
 class Class(C.Structure):
     _pack_ = 1
 
-    class_name: CStr[22]  # For uniques, this is their name (e.g. "Asagi")
+    # For uniques, this is their name (e.g. "Asagi"). For generics, it's their
+    # class name (e.g. Swordmaster).
+    _CLASS_NAME_LEN: Final[int] = 22 if PSP else 31
+    class_name: CStr[_CLASS_NAME_LEN]
 
     # For uniques, confusingly this is their class name (e.g. "Gunner" for
     # Asagi). For generics, this is the name of the rank within their class
     # (e.g. all Prinnies have class_name "Prinny", but they have names like
     # "Prinny Leader" or "Prinny God" depending on rank.)
-    name: CStr[21]
+    _NAME_LEN: Final[int] = 21 if PSP else 31
+    name: CStr[_NAME_LEN]
 
-    # Note that Asagi's description is misaligned in the translation by default
-    description: CStr[58]
+    # Note that Asagi's description is misaligned in the PSP translation by
+    # default, which makes this field seem shorter than it actually is.
+    _DESCRIPTION_LEN: Final[int] = 58 if PSP else 114
+    description: CStr[_DESCRIPTION_LEN]
+
     type: CUInt8  # One of the ClassType enumeration values
     _unk1: CUInt8Array[2]
 
@@ -71,7 +81,9 @@ class Class(C.Structure):
     character_slots: CUInt8
     total_slots: CUInt8
 
-    _unk3: CUInt8Array[2]
+    _UNK3_LEN: Final[int] = 2 if PSP else 3
+    _unk3: CUInt8Array[_UNK3_LEN]
+
     id: CUInt16
 
     # If the appearance of this class is based off another, the other class's
@@ -151,16 +163,18 @@ class ClassTable(CountedTable[Class]):
     def __init__(self, buffer: WriteableBuffer, offset: int = 0) -> None:
         super().__init__(Class, buffer, offset)
 
-    def class_for_class_name(self, class_name: str) -> Class:
+    def class_for_class_name(self, class_name: str, normalize: bool = True) -> Class:
         for cls in self:
-            if cls.class_name == class_name:
+            if (cls.class_name == class_name or
+                    (normalize and unicodedata.normalize('NFKC', cls.class_name) == class_name)):
                 return cls
 
         raise KeyError(f'No class with the class_name {class_name!r}')
 
-    def class_for_name(self, name: str) -> Class:
+    def class_for_name(self, name: str, normalize: bool = True) -> Class:
         for cls in self:
-            if cls.name == name:
+            if (cls.name == name or
+                    (normalize and unicodedata.normalize('NFKC', cls.name) == name)):
                 return cls
 
         raise KeyError(f'No class with the name {name!r}')
