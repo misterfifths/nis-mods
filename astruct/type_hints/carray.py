@@ -42,7 +42,9 @@ class CArray(Iterable[_T], Protocol[_T, _CT]):
     For arrays of Structures or Unions, you can use the CStructureArray and
     CUnionArray types as shorthand; they only take one type argument.
     """
-    _type_: ClassVar[type[_CT]]
+    # Re: the below ignore - there is ongoing discussion on whether this should
+    # be valid. See https://github.com/python/mypy/issues/5144.
+    _type_: ClassVar[type[_CT]]  # type: ignore
 
     @overload
     @abstractmethod
@@ -82,7 +84,7 @@ class CArray(Iterable[_T], Protocol[_T, _CT]):
         ...
 
 
-class CStructureArray(CArray[_CS, _CS]):
+class CStructureArray(CArray[_CS, _CS], Protocol[_CS]):
     """CStructureArray and CUnionArray are protocols representing a
     ctypes.Array of ctypes.Structures or Unions.
 
@@ -99,5 +101,8 @@ class CStructureArray(CArray[_CS, _CS]):
     pass
 
 
-class CUnionArray(CArray[_CU, _CU]):
-    __doc__ = CStructureArray.__doc__
+class CUnionArray(CArray[_CU, _CU], Protocol[_CU]):
+    pass
+
+
+CUnionArray.__doc__ = CStructureArray.__doc__

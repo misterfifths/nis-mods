@@ -67,7 +67,7 @@ class PSPFSArchive:
 
         file_entries_offset = C.sizeof(PSPFSHeader)
 
-        FileEntryClass: type[PSPFSFileEntry]
+        FileEntryClass: Union[type[_PSPFSFileEntry_PSP], type[_PSPFSFileEntry_PCAndSwitch]]
         if is_psp:
             FileEntryClass = _PSPFSFileEntry_PSP
         else:
