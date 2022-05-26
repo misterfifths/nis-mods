@@ -22,13 +22,13 @@ These are not in increasing address order, because they are grouped into the
 5 types from the header.
 
 Name table:
-Back-to-back variable-length null-terminated shift-jis-encoded strings. For
-some reason, each name seems to have twice as many bytes as actual ASCII
-characters, padded with some number of ASCII spaces and 0x8140 (which is
-shift-jis for U+3000 Ideographic Space).
+Back-to-back variable-length null-terminated shift-jis-encoded strings. In the
+fan-translated PSP file, for some reason each name seems to have twice as many
+bytes as actual ASCII characters, padded with some number of ASCII spaces and
+0x8140 (which is shift-jis for U+3000 Ideographic Space).
 
 
-The default NAME.DAT in the translation has this header:
+The default NAME.DAT in the PSP fan translation has this header:
     D000 CE00 CE00 CE00 6C00
 
     D000 = 208

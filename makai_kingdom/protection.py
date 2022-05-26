@@ -18,6 +18,7 @@ class Protection(C.Structure):
     name: CStr[_NAME_LEN]
 
     if PSP:
+        # This field is just missing in the PC/Switch re-release
         description: CStr[57]
 
 

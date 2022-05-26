@@ -23,7 +23,7 @@ class SkillEffectType(enum.IntEnum):
     # in the strategy guide.
     POWER_BOOST = 0x01
 
-    UNKNOWN_BASE_PANEL = 0x02  # On untranslated skills about the base panel?
+    UNKNOWN_BASE_PANEL = 0x02  # On skills about fighting in the base panel?
 
     # The amount for these is a percent buff/debuff.
     ATK_UP = 0x0b  # e.g. Braveheart
