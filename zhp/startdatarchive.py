@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import Final
 
 from astruct import typed_struct
+from astruct.ctypes_utils import get_bytes_for_field
 from astruct.type_hints import *
 from utils import ro_cached_property
 
@@ -24,13 +25,23 @@ class RawStartDatFileEntry(C.Structure):
     _pack_ = 1
 
     offset: CUInt32
-    filename: CStr[27]
+    _raw_filename: CUInt8Array[27]
     _unk: CUInt8  # constant 0x7c?
 
-    # TODO? After decompression, the filenames wind up with a ton of garbage
-    # after their nulls (repeated chunks of previous filenames, mainly, like
-    # "whatever.dat\0at dat ..."). Is something subtly wrong with the LZS
-    # algorithm? I'd expect more obvious errors elsewhere if so...
+    @property
+    def filename(self) -> str:
+        bs = get_bytes_for_field(self, '_raw_filename')
+        bs_before_null = bs.split(b'\0', 1)[0]
+        return bs_before_null.decode('shift-jis')
+
+    # TODO? After decompression, the filenames are questionable. They wind up
+    # with a ton of garbage after their nulls (repeated chunks of previous
+    # filenames, mainly, like "whatever.dat\0at dat ..."). A few of them are
+    # also not null-terminated, but we can't just use the NotNullTerminated()
+    # annotation, because we need to stop at the first 0 byte or else we
+    # sometimes get invalid shift-jis (hence the above filename property).
+    # Is something subtly wrong with the LZS algorithm? I'd expect more obvious
+    # errors elsewhere if so...
 
 
 @dataclass(frozen=True)
