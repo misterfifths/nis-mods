@@ -204,7 +204,34 @@ def lower_building_mana_costs(start_dat: StartDatArchive) -> None:
         cls.mana_cost = 0
 
 
-def apply_translation_fixes(start_dat: StartDatArchive) -> StartDatArchive:
+def more_things_for_sale(start_dat: StartDatArchive) -> None:
+    print('\n>> Making more items available for purchase...')
+
+    BUYABLE_CATEGORIES = (ItemCategory.SHOES,
+                          ItemCategory.GLASSES,
+                          ItemCategory.BELT,
+                          ItemCategory.RING)
+
+    for i in start_dat.itemtab:
+        # Only making the rarity 1 items buyable. That keeps the top-tier items
+        # in these categories only available in dungeons.
+        if i.rarity == 1 and i.category in BUYABLE_CATEGORIES:
+            dbg(norm(i.name))
+            i.rarity = 0
+
+    gency_tonic = start_dat.itemtab.item_for_name('Gency Tonic')
+    gency_tonic.rarity = 0
+    gency_tonic.hl_cost = 1000  # up from 500
+    # The shops have some sort of filter for which items they'll list, and
+    # Travel Items are excluded. Changing the category was the only way I could
+    # find to have it appear. Treasure was just an arbitrary choice. This
+    # doesn't seem to have any other side effects, other than changing its sort
+    # order.
+    gency_tonic.category = ItemCategory.TREASURE
+    dbg(norm(gency_tonic.name))
+
+
+def apply_psp_translation_fixes(start_dat: StartDatArchive) -> StartDatArchive:
     updated_nametab = unpad_names(start_dat)
     start_dat = start_dat.archive_by_replacing_file(NameTable.STANDARD_FILENAME,
                                                     updated_nametab._buffer)  # type: ignore
@@ -221,6 +248,7 @@ def apply_mods(start_dat: StartDatArchive) -> None:
     boost_kill_bonuses(start_dat)
     lower_passive_learn_levels(start_dat)
     lower_building_mana_costs(start_dat)
+    more_things_for_sale(start_dat)
 
 
 '''
@@ -241,7 +269,7 @@ file (lowercase this time) directly and recompress it when we're done.
 
 def patch_start_dat(start_dat: StartDatArchive, is_psp: bool) -> YKCMPArchive:
     if is_psp:
-        apply_translation_fixes(start_dat)
+        apply_psp_translation_fixes(start_dat)
 
     apply_mods(start_dat)
 

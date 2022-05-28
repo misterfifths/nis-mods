@@ -7,7 +7,7 @@ from platform_config import PSP
 
 from astruct import typed_struct
 from astruct.type_hints import *
-from utils import CountedTable, ro_cached_property
+from utils import CountedTable
 
 from .item_categories import ItemCategory, ItemKind
 
@@ -100,9 +100,13 @@ class Item(C.Structure):
     hl_cost: CUInt32
     mt_cost: CUInt32
 
-    @ro_cached_property
+    @property
     def category(self) -> ItemCategory:
         return ItemCategory.category_for_id(self.category_id)
+
+    @category.setter
+    def category(self, new_category: ItemCategory) -> None:
+        self.category_id = new_category.id
 
     @property
     def kind(self) -> ItemKind:
