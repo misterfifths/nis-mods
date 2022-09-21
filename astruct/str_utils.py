@@ -19,9 +19,9 @@ def decode_null_terminated(bs: ByteString,
                            offset: int = 0,
                            ignore_missing: bool = False) -> tuple[str, int]:
     """Decodes up to the first null character in the given bytes and
-    returns the resulting string (without the null) and the number of bytes
-    consumed (including the null). Does not attempt to decode any bytes
-    after the first null character.
+    returns the resulting string (without the null) and the offset where it
+    ends (after its null if there was one). Does not attempt to decode any
+    bytes after the first null character.
 
     If ignore_missing is False (the default), raises a NullTerminationError
     if no null character is decoded from the bytes.
