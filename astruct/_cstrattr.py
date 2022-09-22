@@ -98,10 +98,6 @@ class CStrAttr:
         if first_annotated_md_of_type(hint, NotNullTerminated):
             res.null_terminated = False
 
-        if res.null_terminated:
-            # We only need this for null-terminated strings
-            res._incremental_decoder = get_incremental_decoder(res.encoding, res.errors)
-
         if first_annotated_md_of_type(hint, DoNotZeroExtraBytes):
             res.zero_extra_bytes = False
 
@@ -117,7 +113,9 @@ class CStrAttr:
         if no zero character is decoded.
         """
         if self.null_terminated:
-            assert self._incremental_decoder
+            if self._incremental_decoder is None:
+                self._incremental_decoder = get_incremental_decoder(self.encoding, self.errors)
+
             ignore_missing_nulls = self.errors != 'strict'
             s, _ = decode_null_terminated(bs,
                                           self._incremental_decoder,
