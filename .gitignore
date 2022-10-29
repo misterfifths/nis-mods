@@ -6,9 +6,5 @@ __pycache__/
 scratch/
 poetry.lock
 
-# Data files for testing
-*DATA.DAT*
-*SYSTEM.DAT*
-*START.DAT*
-*start.dat*
-*start.ks4*
+data-files/
+*_playground.py
