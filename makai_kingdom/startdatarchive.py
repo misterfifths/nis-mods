@@ -11,6 +11,7 @@ from .items import ItemTable
 from .names import NameTable
 from .protection import ProtectionTable
 from .skills import SkillTable
+from .stringtable import StringTable
 from .wish import WishTable
 
 E = TypeVar('E', bound=AnyCType)
@@ -174,3 +175,8 @@ class StartDatArchive:
     def prottab(self) -> ProtectionTable:
         file_entry = self.find_file(ProtectionTable.STANDARD_FILENAME)
         return ProtectionTable(self._buffer, file_entry.offset)
+
+    @ro_cached_property
+    def stringtab(self) -> StringTable:
+        file_entry = self.find_file(StringTable.STANDARD_FILENAME)
+        return StringTable(self._buffer, file_entry.offset)
