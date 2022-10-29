@@ -1,6 +1,7 @@
 import inspect
+from abc import abstractmethod
 from collections import Counter, defaultdict
-from typing import ByteString, Callable, DefaultDict, Iterable, Optional, TypeVar
+from typing import ByteString, Callable, DefaultDict, Iterable, Optional, Protocol, TypeVar
 
 from astruct._cstrattr import CStrAttr
 from astruct.ctypes_utils import get_bytes_for_field
@@ -16,7 +17,15 @@ __all__ = ['all_zero', 'unkdump', 'check_zero_fields', 'iter_cstr_fields',
            'shared_unk_bytes', 'unique_unk_bytes']
 
 T = TypeVar('T', bound=CStructureOrUnion)
-K = TypeVar('K')
+
+
+class _Comparable(Protocol):
+    @abstractmethod
+    def __lt__(self: 'CK', other: 'CK') -> bool:
+        pass
+
+
+CK = TypeVar('CK', bound=_Comparable)
 
 
 def all_zero(xs: Iterable[int]) -> bool:
@@ -238,22 +247,23 @@ def check_str_field_padding(s: T, strify_struct: Callable[[T], str]) -> None:
 
 
 def group_and_dump(objects: Iterable[T],
-                   key: Callable[[T], K],
+                   key: Callable[[T], CK],
                    only_show_non_unique: bool = False,
                    strify_obj: Callable[[T], str] = repr,
-                   strify_key: Callable[[K], str] = repr) -> None:
+                   strify_key: Callable[[CK], str] = repr) -> None:
     """Groups objects by the given key and prints a description of each group.
 
     The given strify functions will be used to generate string versions of the
     objects and keys, respectively. If only_show_non_unique is True, only keys
     with more than one corresponding object will be printed.
     """
-    objs_by_key: defaultdict[K, list[T]] = defaultdict(list)
+    objs_by_key: defaultdict[CK, list[T]] = defaultdict(list)
     for obj in objects:
         objs_by_key[key(obj)].append(obj)
 
     first = True
-    for k, objs in objs_by_key.items():
+    for k in sorted(objs_by_key.keys()):
+        objs = objs_by_key[k]
         if only_show_non_unique and len(objs) == 1:
             continue
 
