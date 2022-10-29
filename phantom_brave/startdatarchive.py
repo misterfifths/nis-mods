@@ -45,9 +45,9 @@ class StartDatFileEntry:
         self.size = base_offset + raw_file.raw_end_offset - file_offset
 
 
-class StartDatArchive:
-    STANDARD_FILENAME: Final = 'START.DAT'
-
+# This format is shared between Phantom Brave and La Pucelle. This base class
+# isolates the game-independent parts.
+class StartDatBase:
     _buffer: WriteableBuffer
     _base_offset: int
     _header: StartDatHeader
@@ -77,7 +77,11 @@ class StartDatArchive:
             C.sizeof(self._header) + \
             C.sizeof(self._raw_files)
         offset = first_file_data_offset
-        for raw_file in self._raw_files:
+
+        # Entries in the Phantom Brave start.dat are sorted by their end
+        # offset. La Pucelle uses the exact same format but the entries aren't
+        # sorted. For compatibility, we're just sorting unconditionally here.
+        for raw_file in sorted(self._raw_files, key=lambda f: f.raw_end_offset):
             wrapper = StartDatFileEntry(raw_file, first_file_data_offset, offset)
             offset += wrapper.size
 
@@ -99,6 +103,10 @@ class StartDatArchive:
             print(f'Extracting {f.filename} @ {f.offset:#x}: {f.size} bytes')
             with open(os.path.join(dirname, f.filename), 'wb') as o:
                 o.write(self._buffer[f.offset:f.offset + f.size])
+
+
+class StartDatArchive(StartDatBase):
+    STANDARD_FILENAME: Final = 'START.DAT'
 
     @ro_cached_property
     def skilltab(self) -> SkillTable:
