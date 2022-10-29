@@ -8,6 +8,7 @@ packages = [
     { include = "phantom_brave" },
     { include = "makai_kingdom" },
     { include = "zhp" },
+    { include = "la_pucelle" },
     { include = "utils" }
 ]
 
@@ -15,6 +16,7 @@ packages = [
 python = "^3.9"
 wcwidth = "^0.2.5"
 ipython = {version = "^7.28.0", optional = true}
+zstandard = "^0.18.0"
 
 [tool.poetry.dev-dependencies]
 mypy = "^0.910"
@@ -60,6 +62,7 @@ files = ["*.py",
          "phantom_brave/**/*.py",
          "makai_kingdom/**/*.py",
          "zhp/**/*.py",
+         "la_pucelle/**/*.py",
          "utils/**/*.py"]
 
 
@@ -70,7 +73,8 @@ src_paths = ["*.py",
              "phantom_brave/**/*.py",
              "makai_kingdom/**/*.py",
              "zhp/**/*.py",
+             "la_pucelle/**/*.py",
              "utils/**/*.py"]
 line_length = 100
-known_third_party = ["mypy", "wcwidth"]
-known_first_party = ["utils", "astruct", "phantom_brave", "makai_kingdom", "zhp"]
+known_third_party = ["mypy", "wcwidth", "zstandard"]
+known_first_party = ["utils", "astruct", "phantom_brave", "makai_kingdom", "zhp", "la_pucelle"]
