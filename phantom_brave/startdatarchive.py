@@ -1,6 +1,6 @@
 import ctypes as C
 import os
-from typing import Final, Sequence, TypeVar
+from typing import Sequence, TypeVar
 
 from astruct import typed_struct
 from astruct.type_hints import *
@@ -106,7 +106,7 @@ class StartDatBase:
 
 
 class StartDatArchive(StartDatBase):
-    STANDARD_FILENAME: Final = 'START.DAT'
+    STANDARD_FILENAME = 'START.DAT'
 
     @ro_cached_property
     def skilltab(self) -> SkillTable:

@@ -1,7 +1,6 @@
 import ctypes as C
 import os
 from dataclasses import dataclass
-from typing import Final
 
 from astruct import typed_struct
 from astruct.ctypes_utils import get_bytes_for_field
@@ -52,7 +51,7 @@ class StartDatFileEntry:
 
 
 class StartDatArchive:
-    STANDARD_FILENAME: Final = 'start.lzs'
+    STANDARD_FILENAME = 'start.lzs'
 
     _buffer: WriteableBuffer
     _header: StartDatHeader

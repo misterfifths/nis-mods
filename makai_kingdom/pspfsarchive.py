@@ -1,7 +1,7 @@
 import ctypes as C
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Annotated, ByteString, Final, Iterator, Union
+from typing import Annotated, ByteString, Iterator, Union
 
 from astruct import typed_struct
 from astruct.type_hints import *
@@ -17,7 +17,7 @@ from .ykcmparchive import YKCMPArchive
 
 @typed_struct
 class PSPFSHeader(C.Structure):
-    MAGIC: Final = 'PSPFS_V1'
+    MAGIC = 'PSPFS_V1'
 
     _pack_ = 1
 

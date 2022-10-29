@@ -1,5 +1,4 @@
 import ctypes as C
-from typing import Final
 
 from astruct import typed_struct
 from astruct.str_utils import (decode_null_terminated, encode_null_terminated,
@@ -65,7 +64,7 @@ class NameDatOffsetTableEntry(C.Structure):
 
 
 class NameTable:
-    STANDARD_FILENAME: Final = 'NAME.DAT'
+    STANDARD_FILENAME = 'NAME.DAT'
 
     _header: NameDatHeader
     _offsets: CStructureArray[NameDatOffsetTableEntry]

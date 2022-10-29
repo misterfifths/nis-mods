@@ -4,7 +4,7 @@ import struct
 import sys
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Annotated, Final, Iterator, Sequence, Union
+from typing import Annotated, Iterator, Sequence, Union
 
 from astruct import typed_struct
 from astruct.type_hints import *
@@ -19,8 +19,8 @@ from utils.hexdump.byte_utils import hexlify
 
 @typed_struct
 class YKCMPHeader(C.Structure):
-    MAGIC: Final = 'YKCMP_V1'
-    UNKNOWN_FIELD: Final = 4
+    MAGIC = 'YKCMP_V1'
+    UNKNOWN_FIELD_VALUE = 4
 
     _pack_ = 1
 
@@ -34,7 +34,7 @@ class YKCMPHeader(C.Structure):
             raise ValueError(f'Invalid magic in YKCMP header: {self.magic!r}')
 
         # Not actually sure if this is important, but checking it can't hurt.
-        if self._unk != YKCMPHeader.UNKNOWN_FIELD:
+        if self._unk != YKCMPHeader.UNKNOWN_FIELD_VALUE:
             raise ValueError(f'Invalid constant in YKCMP header: {self._unk}')
 
 

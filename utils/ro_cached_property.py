@@ -1,4 +1,4 @@
-from typing import Any, Callable, Final, Generic, Optional, TypeVar
+from typing import Any, Callable, Generic, Optional, TypeVar
 
 _T = TypeVar('_T')
 _RT = TypeVar('_RT')
@@ -25,7 +25,7 @@ class ro_cached_property(Generic[_T, _RT]):
     can only be used on classes that allow the addition of abritrary
     attributes.
     """
-    CACHE_ATTR_PREFIX: Final = "__cached_"
+    CACHE_ATTR_PREFIX = "__cached_"
 
     func: Callable[[_T], _RT]
     attr_name: Optional[str]

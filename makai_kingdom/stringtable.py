@@ -1,12 +1,11 @@
 import struct
-from typing import Final
 
 from astruct.str_utils import decode_null_terminated, get_incremental_decoder
 from astruct.type_hints import *
 
 
 class StringTable:
-    STANDARD_FILENAME: Final = 'stringtabledata.dat'
+    STANDARD_FILENAME = 'stringtabledata.dat'
 
     strings: list[str]
 

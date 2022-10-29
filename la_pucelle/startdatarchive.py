@@ -1,5 +1,3 @@
-from typing import Final
-
 from phantom_brave.startdatarchive import StartDatBase
 from utils import ro_cached_property
 
@@ -11,7 +9,7 @@ from .skills import SkillTable
 # La Pucelle's start_{en,jp}.dat format is the same as Phantom Brave's. The
 # shared details are in StartDatBase.
 class StartDatArchive(StartDatBase):
-    STANDARD_PATH: Final = 'PSP_GAME/USRDIR/start_en.dat'
+    STANDARD_PATH = 'PSP_GAME/USRDIR/start_en.dat'
 
     @ro_cached_property
     def itemtab(self) -> ItemTable:

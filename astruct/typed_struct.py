@@ -2,7 +2,7 @@
 
 import ctypes as C
 import typing
-from typing import Any, ClassVar, Final, Generic, TypeVar
+from typing import Any, ClassVar, Generic, TypeVar
 
 from ._carrayattr import CArrayAttr
 from ._cfieldattr import CFieldAttr
@@ -14,7 +14,7 @@ _CSU = TypeVar('_CSU', bound=CStructureOrUnion)
 
 
 class _TypedStructBuilder(Generic[_CSU]):
-    ATTR_NAME_BLACKLIST: Final = {'_anonymous_', '_pack_'}
+    ATTR_NAME_BLACKLIST = {'_anonymous_', '_pack_'}
 
     target_cls: type[_CSU]
     hints: dict[str, Any]
@@ -41,8 +41,12 @@ class _TypedStructBuilder(Generic[_CSU]):
             if hint_is_specialized(hint, ClassVar):  # type: ignore[arg-type]
                 continue
 
-            if hint is Final or hint_is_specialized(hint, Final):
-                continue
+            if hasattr(self.target_cls, attr_name) and attr_name.upper() != attr_name:
+                # This attr was actually given a value in the class definition.
+                # If it doesn't look like a constant, throw to be safe.
+                raise ValueError(f'typed_struct applied to a class with an attr {attr_name} with '
+                                 'a value. Name it in all caps if it is a constant, or annotate '
+                                 'it with ClassVar if it is a class-level variable.')
 
             unannotated_hint = self.unannotated_hints[attr_name]
 

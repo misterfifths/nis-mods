@@ -1,6 +1,6 @@
 import ctypes as C
 import os
-from typing import Annotated, ByteString, Final, TypeVar
+from typing import Annotated, ByteString, TypeVar
 
 from astruct import typed_struct
 from astruct.type_hints import *
@@ -19,7 +19,7 @@ E = TypeVar('E', bound=AnyCType)
 
 @typed_struct
 class StartDatHeader(C.Structure):
-    MAGIC: Final = 'DSARC FL'
+    MAGIC = 'DSARC FL'
 
     _pack_ = 1
 
@@ -41,7 +41,7 @@ class StartDatFileEntry(C.Structure):
 
 
 class StartDatArchive:
-    STANDARD_FILENAME: Final = 'START.KS4'
+    STANDARD_FILENAME = 'START.KS4'
 
     _buffer: WriteableBuffer
     _header: StartDatHeader

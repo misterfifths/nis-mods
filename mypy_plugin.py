@@ -1,7 +1,7 @@
-from typing import Any, Callable, Final, Optional
+from typing import Any, Callable, Optional
 
 from mypy.errorcodes import TYPE_ARG, VALID_TYPE
-from mypy.nodes import SymbolTableNode, Var
+from mypy.nodes import SymbolTableNode, TypeInfo, Var
 from mypy.plugin import AnalyzeTypeContext, ClassDefContext, Plugin
 from mypy.types import Instance, RawExpressionType
 from mypy.types import Type as MyPyType
@@ -16,18 +16,18 @@ def _fullname(t: Any) -> str:
     return t.__module__ + '.' + t.__qualname__
 
 
-SIZED_STRING_TYPE_FULLNAME: Final = _fullname(CStr)
-SIZED_ARRAY_TYPE_FULLNAME_PREFIX: Final = _fullname(CUInt8Array).removesuffix('UInt8Array')
-SIZED_ARRAY_TYPE_FULLNAME_SUFFIX: Final = 'Array'
-SIZED_ARRAY_TYPE_MODULE: Final = CUInt8Array.__module__
+SIZED_STRING_TYPE_FULLNAME = _fullname(CStr)
+SIZED_ARRAY_TYPE_FULLNAME_PREFIX = _fullname(CUInt8Array).removesuffix('UInt8Array')
+SIZED_ARRAY_TYPE_FULLNAME_SUFFIX = 'Array'
+SIZED_ARRAY_TYPE_MODULE = CUInt8Array.__module__
 
-CARRAY_PROTOCOL_FULLNAME: Final = _fullname(CArray)
+CARRAY_PROTOCOL_FULLNAME = _fullname(CArray)
 
-TYPED_STRUCT_FULLNAME: Final = _fullname(astruct.typed_struct)
+TYPED_STRUCT_FULLNAME = _fullname(astruct.typed_struct)
 
 # The actual types of these have __module__ of _ctypes, which trips things up.
-CTYPES_STRUCTURE_FULLNAME: Final = 'ctypes.Structure'
-CTYPES_UNION_FULLNAME: Final = 'ctypes.Union'
+CTYPES_STRUCTURE_FULLNAME = 'ctypes.Structure'
+CTYPES_UNION_FULLNAME = 'ctypes.Union'
 
 
 class AStructCheckerPlugin(Plugin):
@@ -40,8 +40,8 @@ class AStructCheckerPlugin(Plugin):
         arg = tp.args[0]
         if isinstance(arg, RawExpressionType):
             # Literal ints
-            if not isinstance(arg.literal_value, int) or arg.literal_value <= 0:
-                return False
+            if isinstance(arg.literal_value, int) and arg.literal_value > 0:
+                return True
         elif isinstance(arg, UnboundType):
             # Anything else. At this point mypy seems to assume it will be a
             # type, so it's an UnboundType instance.
@@ -54,16 +54,20 @@ class AStructCheckerPlugin(Plugin):
             # is there on the object. :-/
             node: SymbolTableNode = api.lookup_qualified(arg.name, ctx)  # type: ignore
 
-            # node.type should be an Instance, which is to say it's a
-            # particular instantiation of a type. If it is, then node.type.type
-            # is a TypeInfo for the deduced type of the value, and that should
-            # be a subtype of int.
-            if not isinstance(node.type, Instance) or not node.type.type.has_base('builtins.int'):
-                return False
-        else:
-            return False
+            # node.node is the AST node of the definition, which should be a
+            # Var. That Var must have been given a value (i.e. not just X: int,
+            # but X: int = 5), which is tracked by the has_explicit_value
+            # property. Then, node.node.type is an Instance, which is to say
+            # it's a particular instantiation of a type. Its type property
+            # should be a TypeInfo, which should be for a subtype of int.
+            return (isinstance(node, SymbolTableNode) and
+                    isinstance(node.node, Var) and
+                    node.node.has_explicit_value and
+                    isinstance(node.node.type, Instance) and
+                    isinstance(node.node.type.type, TypeInfo) and
+                    node.node.type.type.has_base('builtins.int'))
 
-        return True
+        return False
 
     def _check_size_arg(self, analy_ctx: AnalyzeTypeContext) -> None:
         if not self._has_valid_size_arg(analy_ctx):

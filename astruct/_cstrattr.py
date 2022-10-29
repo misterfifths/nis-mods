@@ -47,7 +47,7 @@ bytes into place when needed.
 @dataclass
 class CStrAttr:
     """Represents the configuration of a CStr attribute on a typed_struct."""
-    RAW_FIELD_PREFIX: ClassVar[str] = '_raw_'  # TODO: @dataclass + Final = sad
+    RAW_FIELD_PREFIX: ClassVar[str] = '_raw_'
 
     attr_name: str
     raw_field_name: str

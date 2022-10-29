@@ -1,5 +1,5 @@
 import ctypes as C
-from typing import Annotated, Final, Iterable
+from typing import Annotated, Iterable
 
 from astruct import typed_struct
 from astruct.type_hints import *
@@ -41,7 +41,7 @@ assert C.sizeof(Skill) == 126
 
 
 class SkillTable(CountedTable[Skill]):
-    STANDARD_FILENAME: Final = 'skill.dat'
+    STANDARD_FILENAME = 'skill.dat'
 
     def __init__(self, buffer: WriteableBuffer, offset: int = 0) -> None:
         super().__init__(Skill, buffer, offset)

@@ -1,7 +1,7 @@
 import ctypes as C
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Annotated, Final, Iterator, Protocol, Union
+from typing import Annotated, Iterator, Protocol, Union
 
 from astruct import typed_struct
 from astruct.type_hints import *
@@ -16,7 +16,7 @@ from .startdatarchive import StartDatArchive
 
 @typed_struct
 class PSPFSHeader(C.Structure):
-    MAGIC: Final = 'PSPFS_V1'
+    MAGIC = 'PSPFS_V1'
 
     _pack_ = 1
 

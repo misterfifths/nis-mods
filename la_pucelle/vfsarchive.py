@@ -3,7 +3,7 @@ import os
 import struct
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Annotated, Final, Iterable, Iterator, Optional, Union
+from typing import Annotated, Iterable, Iterator, Optional, Union
 
 import zstandard as zstd
 
@@ -34,7 +34,7 @@ http://aluigi.altervista.org/bms/killer7_vfs.bms
 
 @typed_struct
 class VFSHeader(C.Structure):
-    MAGIC: Final = 'VFS3'
+    MAGIC = 'VFS3'
 
     _pack_ = 1
 

@@ -1,9 +1,7 @@
-from typing import Final
-
 from wcwidth import wcswidth, wcwidth  # type: ignore[import]
 
-COMBINER_ISOLATION_CHAR: Final = '◌'
-NONPRINTABLE_REPLACEMENT_CHAR: Final = '.'
+COMBINER_ISOLATION_CHAR = '◌'
+NONPRINTABLE_REPLACEMENT_CHAR = '.'
 
 
 def control_char_symbol(c: str) -> str:

@@ -1,7 +1,6 @@
 import ctypes as C
 import enum
 import unicodedata
-from typing import Final
 
 from platform_config import PSP
 
@@ -45,19 +44,19 @@ class Class(C.Structure):
 
     # For uniques, this is their name (e.g. "Asagi"). For generics, it's their
     # class name (e.g. Swordmaster).
-    _CLASS_NAME_LEN: Final[int] = 22 if PSP else 31
+    _CLASS_NAME_LEN: int = 22 if PSP else 31
     class_name: CStr[_CLASS_NAME_LEN]
 
     # For uniques, confusingly this is their class name (e.g. "Gunner" for
     # Asagi). For generics, this is the name of the rank within their class
     # (e.g. all Prinnies have class_name "Prinny", but they have names like
     # "Prinny Leader" or "Prinny God" depending on rank.)
-    _NAME_LEN: Final[int] = 21 if PSP else 31
+    _NAME_LEN: int = 21 if PSP else 31
     name: CStr[_NAME_LEN]
 
     # Note that Asagi's description is misaligned in the PSP translation by
     # default, which makes this field seem shorter than it actually is.
-    _DESCRIPTION_LEN: Final[int] = 58 if PSP else 114
+    _DESCRIPTION_LEN: int = 58 if PSP else 114
     description: CStr[_DESCRIPTION_LEN]
 
     type: CUInt8  # One of the ClassType enumeration values
@@ -81,7 +80,7 @@ class Class(C.Structure):
     character_slots: CUInt8
     total_slots: CUInt8
 
-    _UNK3_LEN: Final[int] = 2 if PSP else 3
+    _UNK3_LEN: int = 2 if PSP else 3
     _unk3: CUInt8Array[_UNK3_LEN]
 
     id: CUInt16
@@ -158,7 +157,7 @@ class Class(C.Structure):
 
 
 class ClassTable(CountedTable[Class]):
-    STANDARD_FILENAME: Final = 'CHAR.DAT'
+    STANDARD_FILENAME = 'CHAR.DAT'
 
     def __init__(self, buffer: WriteableBuffer, offset: int = 0) -> None:
         super().__init__(Class, buffer, offset)

@@ -2,7 +2,7 @@ import ctypes as C
 import os
 from contextlib import contextmanager
 from pathlib import Path
-from typing import Annotated, Final, Iterator, Union
+from typing import Annotated, Iterator, Union
 
 from astruct import typed_struct
 from astruct.type_hints import *
@@ -18,7 +18,7 @@ from .startdatarchive import StartDatArchive
 
 @typed_struct
 class NISPACKHeader(C.Structure):
-    MAGIC: Final = 'NISPACK\0'
+    MAGIC = 'NISPACK\0'
 
     _pack_ = 1
 

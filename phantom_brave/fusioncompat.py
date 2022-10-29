@@ -1,5 +1,4 @@
 import ctypes as C
-from typing import Final
 
 from astruct import typed_struct
 from astruct.type_hints import *
@@ -105,7 +104,7 @@ class FusionCompatibilityRow(C.Structure):
 
 
 class FusionCompatibilityTable(CountedTable[FusionCompatibilityRow]):
-    STANDARD_FILENAME: Final = 'aishou.dat'
+    STANDARD_FILENAME = 'aishou.dat'
 
     _column_order: list[int]
 

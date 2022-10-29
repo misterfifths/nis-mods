@@ -111,7 +111,7 @@ class Skill(C.Structure):
     # This has the side-effect of strings with that escape sequence not being
     # directly printable onto a UTF-8 terminal. Print their repr as a
     # workaround.
-    _DESCRIPTION_LEN: Final[int] = 56 if PSP else 104
+    _DESCRIPTION_LEN: int = 56 if PSP else 104
     description: Annotated[CStr[_DESCRIPTION_LEN], Encoding(errors='surrogateescape')]
 
     _zero2: CUInt8
@@ -133,12 +133,12 @@ class Skill(C.Structure):
     # SkillEffectType for possible values. The list is terminated by a zero.
     effect_types: CUInt8Array[5]
 
-    _UNK4_LEN: Final[int] = 1 if PSP else 4
+    _UNK4_LEN: int = 1 if PSP else 4
     _unk4: CUInt8Array[_UNK4_LEN]
 
 
 class SkillTable(CountedTable[Skill]):
-    STANDARD_FILENAME: Final = 'MAGIC.DAT'
+    STANDARD_FILENAME = 'MAGIC.DAT'
 
     def __init__(self, buffer: WriteableBuffer, offset: int = 0) -> None:
         super().__init__(Skill, buffer, offset)

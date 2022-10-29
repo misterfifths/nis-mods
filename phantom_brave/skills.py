@@ -1,5 +1,5 @@
 import ctypes as C
-from typing import Annotated, Final
+from typing import Annotated
 
 from astruct import typed_struct
 from astruct.type_hints import *
@@ -35,7 +35,7 @@ class Skill(C.Structure):
 
 
 class SkillTable(CountedTable[Skill]):
-    STANDARD_FILENAME: Final = 'magic.dat'
+    STANDARD_FILENAME = 'magic.dat'
 
     def __init__(self, buffer: WriteableBuffer, offset: int = 0) -> None:
         super().__init__(Skill, buffer, offset)

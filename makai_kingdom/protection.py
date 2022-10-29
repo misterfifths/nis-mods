@@ -1,5 +1,4 @@
 import ctypes as C
-from typing import Final
 
 from platform_config import PSP
 
@@ -14,7 +13,7 @@ class Protection(C.Structure):
 
     id: CUInt8
 
-    _NAME_LEN: Final[int] = 22 if PSP else 21
+    _NAME_LEN: int = 22 if PSP else 21
     name: CStr[_NAME_LEN]
 
     if PSP:
@@ -23,7 +22,7 @@ class Protection(C.Structure):
 
 
 class ProtectionTable(CountedTable[Protection]):
-    STANDARD_FILENAME: Final = 'PROTECTION.DAT'
+    STANDARD_FILENAME = 'PROTECTION.DAT'
 
     def __init__(self, buffer: WriteableBuffer, offset: int = 0) -> None:
         super().__init__(Protection, buffer, offset)

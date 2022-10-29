@@ -1,6 +1,6 @@
 import ctypes as C
 import enum
-from typing import Annotated, Final
+from typing import Annotated
 
 from astruct import typed_struct
 from astruct.type_hints import *
@@ -90,7 +90,7 @@ class Item(C.Structure):
 
 
 class ItemTable(CountedTable[Item]):
-    STANDARD_FILENAME: Final = 'kis.dat'
+    STANDARD_FILENAME = 'kis.dat'
 
     def __init__(self, buffer: WriteableBuffer, offset: int = 0) -> None:
         super().__init__(Item, buffer, offset)

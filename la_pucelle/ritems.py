@@ -1,6 +1,6 @@
 import ctypes as C
 import enum
-from typing import Annotated, Final, Sequence
+from typing import Annotated, Sequence
 
 from astruct import typed_struct
 from astruct.type_hints import *
@@ -96,7 +96,7 @@ class RItem(C.Structure):
 
 
 class RItemTable(CountedTable[RItem]):
-    STANDARD_FILENAME: Final = 'ritem.dat'
+    STANDARD_FILENAME = 'ritem.dat'
 
     prefixes: Sequence[RItem]
     item_bases: Sequence[RItem]

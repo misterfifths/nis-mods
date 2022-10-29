@@ -1,7 +1,6 @@
 import ctypes as C
 import enum
 import unicodedata
-from typing import Final
 
 from platform_config import PSP
 
@@ -37,10 +36,10 @@ class StatusResType(enum.IntFlag):
 class Item(C.Structure):
     _pack_ = 1
 
-    _NAME_LEN: Final[int] = 21 if PSP else 31
+    _NAME_LEN: int = 21 if PSP else 31
     name: CStr[_NAME_LEN]
 
-    _DESCRIPTION_LEN: Final[int] = 57 if PSP else 113
+    _DESCRIPTION_LEN: int = 57 if PSP else 113
     description: CStr[_DESCRIPTION_LEN]
 
     rank: CUInt8
@@ -114,7 +113,7 @@ class Item(C.Structure):
 
 
 class ItemTable(CountedTable[Item]):
-    STANDARD_FILENAME: Final = 'MITEM.DAT'
+    STANDARD_FILENAME = 'MITEM.DAT'
 
     def __init__(self, buffer: WriteableBuffer, offset: int = 0) -> None:
         super().__init__(Item, buffer, offset)

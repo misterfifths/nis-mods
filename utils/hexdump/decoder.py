@@ -1,11 +1,11 @@
 import codecs
 import unicodedata
-from typing import Final, Optional
+from typing import Optional
 
 from .byte_utils import BytesLike, hexlify
 from .display_utils import NONPRINTABLE_REPLACEMENT_CHAR, safe_2_cell_str
 
-BYTE_CONTINUATION_CHAR: Final = '⋯'
+BYTE_CONTINUATION_CHAR = '⋯'
 
 
 def decode_one(decoder: codecs.IncrementalDecoder,

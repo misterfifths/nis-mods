@@ -24,6 +24,7 @@ def dbg(s: str) -> None:
 # The PC re-release largely uses fullwidth unicode characters for the Roman
 # alphabet, which is hard to read. NFKC normalization brings them back down to
 # ASCII.
+# TODO: can probably get rid of this now that we have wide_shift_jis.
 def norm(s: str) -> str:
     return unicodedata.normalize('NFKC', s)
 
@@ -162,7 +163,7 @@ def boost_kill_bonuses(start_dat: StartDatArchive) -> None:
     print('\n>> Raising EXP/HL/mana kill bonuses on all classes...')
 
     for cls in start_dat.classtab:
-        cls.hl_bonus = cls.exp_bonus = cls.mana_bonus = 150
+        cls.hl_bonus = cls.exp_bonus = cls.mana_bonus = 200
 
 
 def lower_passive_learn_levels(start_dat: StartDatArchive) -> None:
