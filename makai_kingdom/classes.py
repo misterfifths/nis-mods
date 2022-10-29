@@ -144,13 +144,13 @@ class Class(C.Structure):
 
     @property
     def is_generic_character(self) -> bool:
-        return self.is_character and \
-            self.type in (ClassType.GENERIC_FEMALE, ClassType.GENERIC_MALE)
+        return (self.is_character and
+                self.type in (ClassType.GENERIC_FEMALE, ClassType.GENERIC_MALE))
 
     @property
     def is_male(self) -> bool:
-        return self.is_character and \
-            self.type in (ClassType.GENERIC_MALE, ClassType.BUILDING_VEHICLE_OR_UNIQUE_MALE)
+        return (self.is_character and
+                self.type in (ClassType.GENERIC_MALE, ClassType.BUILDING_VEHICLE_OR_UNIQUE_MALE))
 
     @property
     def is_female(self) -> bool:

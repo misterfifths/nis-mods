@@ -73,9 +73,9 @@ class StartDatBase:
         # Entries only record the offset of their final byte, relative to the
         # beginning of the data. So the first file begins at the end of the
         # file listing:
-        first_file_data_offset = self._base_offset + \
-            C.sizeof(self._header) + \
-            C.sizeof(self._raw_files)
+        first_file_data_offset = (self._base_offset +
+                                  C.sizeof(self._header) +
+                                  C.sizeof(self._raw_files))
         offset = first_file_data_offset
 
         # Entries in the Phantom Brave start.dat are sorted by their end

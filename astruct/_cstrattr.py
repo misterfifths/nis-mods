@@ -155,8 +155,8 @@ class CStrAttr:
         try:
             return self.bytes_to_str(raw_val)
         except NullTerminationError as e:
-            raise NullTerminationError(f'Missing null terminator for field {self.attr_name!r}') \
-                from e
+            wrapped = NullTerminationError(f'Missing null terminator for field {self.attr_name!r}')
+            raise wrapped from e
 
     def __set__(self, instance: CStructureOrUnion, value: str) -> None:
         # See the note at the top of the file about why we manipulate bytes
